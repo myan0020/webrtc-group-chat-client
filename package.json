@@ -1,0 +1,30 @@
+{
+  "name": "webrtc-group-chat-service",
+  "version": "1.0.0",
+  "description": "A typescript library to provide data service for webrtc group chat features including video calling, screen sharing, text messaging and file transceiving with low lantency",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "version": "npm run build && git add -A lib",
+    "postversion": "git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/myan0020/webrtc-group-chat-service.git"
+  },
+  "keywords": ["webrtc"],
+  "author": "MingDongShenSen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/myan0020/webrtc-group-chat-service/issues"
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "homepage": "https://github.com/myan0020/webrtc-group-chat-service#readme",
+  "devDependencies": {
+    "typescript": "^4.9.5"
+  }
+}

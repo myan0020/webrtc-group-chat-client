@@ -1,0 +1,12 @@
+# [Ignore node_modules folder]
+#
+# It's a third-party dependency folder. 
+# Please run 'npm install' to create.
+node_modules
+
+# [Ignore .DS_Store]
+#
+.DS_Store
+
+
+/lib
