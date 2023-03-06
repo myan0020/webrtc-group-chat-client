@@ -6,15 +6,17 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "version": "npm run build && git add -A lib",
+    "tsc": "tsc",
+    "version": "npm run build && git add .",
     "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/myan0020/webrtc-group-chat-service.git"
   },
-  "keywords": ["webrtc"],
+  "keywords": [
+    "webrtc"
+  ],
   "author": "MingDongShenSen",
   "license": "ISC",
   "bugs": {
@@ -23,8 +25,14 @@
   "files": [
     "lib/**/*"
   ],
+  "exports": {
+    ".": "./lib/index.js"
+  },
   "homepage": "https://github.com/myan0020/webrtc-group-chat-service#readme",
   "devDependencies": {
     "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "reconnecting-alive-socket": "^1.0.3"
   }
 }
