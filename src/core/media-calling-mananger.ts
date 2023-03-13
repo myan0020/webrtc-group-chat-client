@@ -1,5 +1,15 @@
-import { NegotiatablePeerConnection, PeerConnectionMap } from "./common-types";
-
+import {
+  CallingConstraints,
+  CallingInputType,
+  CallingStateChangingType,
+  LocalMediaContext,
+  NegotiatablePeerConnection,
+  PeerConnectionMap,
+  PeerMediaContext,
+  PeerMediaContextMap,
+  PeerMediaContextMapProxy,
+} from "./common-types";
+import { shadowCopyPlainObject } from "./common-util";
 /**
  * reusable media transceivers
  */
@@ -80,51 +90,6 @@ let _handlePeerMediaContextMapChanged:
   | ((peerMediaContextMapProxy: PeerMediaContextMapProxy) => void)
   | undefined;
 
-interface AudioProcessor {
-  audioContext: AudioContext | null;
-  audioGainNode: GainNode | null;
-  audioAnalyserNode: AnalyserNode | null;
-  volumeMultipler: number;
-}
-
-interface LocalAudioProcessor extends AudioProcessor {
-  audioSourceNodeMap: Map<string, MediaStreamAudioSourceNode>;
-  audioDestinationNode: MediaStreamAudioDestinationNode | null;
-}
-
-interface PeerAudioProcessor extends AudioProcessor {
-  audioSourceNode: MediaStreamAudioSourceNode | null;
-  playWithAudioDOMLoaded: (audioDOMLoaded: HTMLMediaElement) => void;
-}
-
-interface MediaContext {
-  videoTrack: MediaStreamTrack | null;
-  audioTrack: MediaStreamTrack | null;
-  audioProcessor: AudioProcessor | null;
-}
-
-interface LocalMediaContext extends MediaContext {
-  mediaSourceStreams: MediaStream[];
-  audioProcessor: LocalAudioProcessor;
-}
-
-interface PeerMediaContext extends MediaContext {
-  audioProcessor: PeerAudioProcessor | null;
-}
-
-interface PeerMediaContextMap {
-  map: Map<string, PeerMediaContext>;
-  has: (peerId: string) => boolean;
-  size: () => number;
-  getMediaContext: (peerId: string) => PeerMediaContext | undefined;
-  deleteTrack: (peerId: string, kind: string) => void;
-  setTrack: (peerId: string, track: MediaStreamTrack) => void;
-}
-
-type ProxyOf<T extends { map: Map<string, PeerMediaContext> }> = Readonly<{ map: T["map"] }>;
-
-type PeerMediaContextMapProxy = ProxyOf<PeerMediaContextMap>;
-
 function buildPeerMediaContextMapProxy(
   peerMediaContextMap: PeerMediaContextMap
 ): PeerMediaContextMapProxy {
@@ -192,7 +157,7 @@ const _peerMediaContextMap: PeerMediaContextMap = {
 
     if (_handlePeerMediaContextMapChanged) {
       _handlePeerMediaContextMapChanged(
-        buildPeerMediaContextMapProxy(_shadowCopyPlainObject(this))
+        buildPeerMediaContextMapProxy(shadowCopyPlainObject(this))
       );
     }
   },
@@ -248,7 +213,7 @@ const _peerMediaContextMap: PeerMediaContextMap = {
 
             if (_handlePeerMediaContextMapChanged) {
               _handlePeerMediaContextMapChanged(
-                buildPeerMediaContextMapProxy(_shadowCopyPlainObject(thatPeerMediaContextMap))
+                buildPeerMediaContextMapProxy(shadowCopyPlainObject(thatPeerMediaContextMap))
               );
             }
           },
@@ -286,7 +251,7 @@ const _peerMediaContextMap: PeerMediaContextMap = {
 
     if (_handlePeerMediaContextMapChanged) {
       _handlePeerMediaContextMapChanged(
-        buildPeerMediaContextMapProxy(_shadowCopyPlainObject(this))
+        buildPeerMediaContextMapProxy(shadowCopyPlainObject(this))
       );
     }
   },
@@ -405,17 +370,6 @@ let _handleLocalAudioMuteAvaliableChanged: ((isAvaliable: boolean) => void) | un
 let _handleLocalVideoMuteAvaliableChanged: ((isAvaliable: boolean) => void) | undefined;
 
 let _callingConstraints: CallingConstraints | null;
-
-enum CallingInputType {
-  CALLING_INPUT_TYPE_AUDIO_MICROPHONE = "microphone_audio",
-  CALLING_INPUT_TYPE_AUDIO_SCREEN = "screen_audio",
-  CALLING_INPUT_TYPE_VIDEO_CAMERA = "camera_video",
-  CALLING_INPUT_TYPE_VIDEO_SCREEN = "screen_video",
-}
-
-export type CallingConstraints = {
-  [key in CallingInputType]?: boolean;
-};
 
 function _applyCallingInputTypes(callingInputTypes: CallingInputType[]) {
   _callingConstraints = {};
@@ -581,7 +535,7 @@ function _buildLocalMediaDestinationTracks() {
 
   if (audioDestinationTrack || videoDestinationTrack) {
     if (_handleLocalMediaContextChanged) {
-      _handleLocalMediaContextChanged(_shadowCopyPlainObject(_localMediaContext));
+      _handleLocalMediaContextChanged(shadowCopyPlainObject(_localMediaContext));
     }
   }
 }
@@ -760,7 +714,7 @@ function _releaseLocalMediaContext() {
 
   // call listener
   if (_handleLocalMediaContextChanged) {
-    _handleLocalMediaContextChanged(_shadowCopyPlainObject(_localMediaContext));
+    _handleLocalMediaContextChanged(shadowCopyPlainObject(_localMediaContext));
   }
 }
 
@@ -910,11 +864,6 @@ function _startCalling(peerConnectionMap: PeerConnectionMap) {
   );
 }
 
-enum CallingStateChangingType {
-  START_UP_CALLING = "Start_Up_Calling",
-  HANG_UP_CALLING = "Hang_Up_Calling",
-}
-
 function _hangUpCalling(isLeavingRoom: boolean) {
   if (!_isCalling) {
     return;
@@ -959,15 +908,6 @@ function _changeCallingState(callingStateChangingType: CallingStateChangingType)
 /**
  * utils
  */
-
-function _shadowCopyPlainObject(plainObj: any): any {
-  type ObjType = typeof plainObj;
-  const copiedPlainObj: ObjType = {};
-  Object.keys(plainObj).forEach((property) => {
-    copiedPlainObj[property] = plainObj[property];
-  });
-  return copiedPlainObj;
-}
 
 function _pureKindOfTransceiver(transceiver: RTCRtpTransceiver) {
   let senderKind = "";

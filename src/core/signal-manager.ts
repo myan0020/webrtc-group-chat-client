@@ -1,74 +1,23 @@
-import { NewPeerLeavePayload, IncomingPassthrough, NewPeerArivalPayload } from "./common-types";
+import {
+  NewPeerLeavePayload,
+  IncomingPassthrough,
+  NewPeerArivalPayload,
+  JoinRoomSuccessPayload,
+  UpdateRoomsPayload,
+  LeaveRoomSuccessPayload,
+  _SignalType,
+} from "./common-types";
 import SocketManager from "./socket-manager";
-
-// declare global {
-//   interface NewPeerArivalPayloadAboutNewPeer {
-//     userId: string;
-//     userName: string;
-//     isPolite: boolean;
-//   }
-
-//   interface NewPeerArivalPeersInfo {
-//     [peerId: string]: string;
-//   }
-
-//   interface NewPeerArivalPayloadAboutExistingPeers {
-//     userContainer: NewPeerArivalPeersInfo;
-//     isPolite: boolean;
-//   }
-
-//   type NewPeerArivalPayload =
-//     | NewPeerArivalPayloadAboutNewPeer
-//     | NewPeerArivalPayloadAboutExistingPeers;
-
-//   interface IncomingSDPPassThrough extends SDPPassThrough {
-//     from: string;
-//   }
-
-//   interface IncomingICEPassThrough extends ICEPassThrough {
-//     from: string;
-//   }
-//   type IncomingPassthrough = IncomingSDPPassThrough | IncomingICEPassThrough;
-
-//   interface NewPeerLeavePayload {
-//     userId: string;
-//   }
-// }
-
-enum _SignalType {
-  // WebSocket //
-  //
-  // heartbeat
-  PING = 3,
-  PONG = 4,
-  //
-  // chat room
-  GET_ROOMS = 5,
-  CREATE_ROOM = 6,
-  UPDATE_ROOMS = 7,
-  JOIN_ROOM = 8,
-  JOIN_ROOM_SUCCESS = 9,
-  LEAVE_ROOM = 10,
-  LEAVE_ROOM_SUCCESS = 11,
-  //
-  // WebRTC connection
-  WEBRTC_NEW_PEER_ARIVAL = 12,
-  WEBRTC_NEW_PEER_LEAVE = 13,
-  WEBRTC_NEW_PASSTHROUGH = 14,
-}
-
-type HandleSignalPayload = (payload: unknown) => void;
 
 let _webSocketUrl: string | undefined;
 
 let _handleWebSocketOpened: EventListener | undefined;
 let _handleWebSocketClosed: EventListener | undefined;
 
-let _handleJoinRoomSuccess: HandleSignalPayload | undefined;
-let _handleRoomsUpdated: HandleSignalPayload | undefined;
-let _handleLeaveRoomSuccess: HandleSignalPayload | undefined;
+let _handleJoinRoomSuccess: ((payload: JoinRoomSuccessPayload) => void) | undefined;
+let _handleRoomsUpdated: ((payload: UpdateRoomsPayload) => void) | undefined;
+let _handleLeaveRoomSuccess: ((payload: LeaveRoomSuccessPayload) => void) | undefined;
 
-let _handleNewPeerArivalExternally: HandleSignalPayload | undefined;
 let _handleNewPeerLeaved: ((payload: NewPeerLeavePayload) => void) | undefined;
 let _handleNewPassthroughArival: ((payload: IncomingPassthrough) => void) | undefined;
 let _handleNewPeerArivalInternally: ((payload: NewPeerArivalPayload) => void) | undefined;
@@ -97,16 +46,15 @@ function _handleSocketPing() {
   SocketManager.emitMessageEvent(_webSocketUrl, _SignalType.PONG);
 }
 
-function _handleSocketUpdateRooms(payload: unknown) {
+function _handleSocketUpdateRooms(payload: UpdateRoomsPayload) {
   console.debug("WebRTCGroupChatController: UPDATE_ROOMS signal received");
-
   // external usage
   if (_handleRoomsUpdated) {
     _handleRoomsUpdated(payload);
   }
 }
 
-function _handleSocketJoinRoomSuccess(payload: unknown) {
+function _handleSocketJoinRoomSuccess(payload: JoinRoomSuccessPayload) {
   console.debug("WebRTCGroupChatController: JOIN_ROOM_SUCCESS signal received");
   // external usage
   if (_handleJoinRoomSuccess) {
@@ -114,7 +62,7 @@ function _handleSocketJoinRoomSuccess(payload: unknown) {
   }
 }
 
-function _handleSocketLeaveRoomSuccess(payload: unknown) {
+function _handleSocketLeaveRoomSuccess(payload: LeaveRoomSuccessPayload) {
   console.debug("WebRTCGroupChatController: LEAVE_ROOM_SUCCESS signal received");
   // external usage
   if (_handleLeaveRoomSuccess) {
@@ -122,34 +70,27 @@ function _handleSocketLeaveRoomSuccess(payload: unknown) {
   }
 }
 
-function _handleSocketNewWebRTCPeerArival(payload: unknown) {
+function _handleSocketNewWebRTCPeerArival(payload: NewPeerArivalPayload) {
   console.debug("WebRTCGroupChatController: WEBRTC_NEW_PEER signal received");
-  const newPeerArivalPayload = payload as NewPeerArivalPayload;
   // internal usage
   if (_handleNewPeerArivalInternally) {
-    _handleNewPeerArivalInternally(newPeerArivalPayload);
-  }
-  // external usage
-  if (_handleNewPeerArivalExternally) {
-    _handleNewPeerArivalExternally(newPeerArivalPayload);
+    _handleNewPeerArivalInternally(payload);
   }
 }
 
-function _handleSocketNewWebRTCPassthroughArival(payload: unknown) {
+function _handleSocketNewWebRTCPassthroughArival(payload: IncomingPassthrough) {
   console.debug("WebRTCGroupChatController: WEBRTC_NEW_PASSTHROUGH signal received");
-  const incomingPassthroughPayload = payload as IncomingPassthrough;
   // internal usage
   if (_handleNewPassthroughArival) {
-    _handleNewPassthroughArival(incomingPassthroughPayload);
+    _handleNewPassthroughArival(payload);
   }
 }
 
-function _handleSocketNewWebRTCPeerLeave(payload: unknown) {
+function _handleSocketNewWebRTCPeerLeave(payload: NewPeerLeavePayload) {
   console.debug("WebRTCGroupChatController: WEBRTC_NEW_PEER_LEAVE signal received");
-  const newPeerLeavePayload = payload as NewPeerLeavePayload;
   // internal usage
   if (_handleNewPeerLeaved) {
-    _handleNewPeerLeaved(newPeerLeavePayload);
+    _handleNewPeerLeaved(payload);
   }
 }
 
@@ -243,39 +184,21 @@ function _passThroughSignaling(payload: unknown) {
   SocketManager.emitMessageEvent(_webSocketUrl, _SignalType.WEBRTC_NEW_PASSTHROUGH, payload);
 }
 
-/**
- * Utils
- */
-
-function _checkUserName(username: string) {
-  if (username.length === 0) {
-    return false;
-  }
-  return true;
-}
-
-function _checkSocketUrl(url: string) {
-  // use regular expression to check it literally
-  return true;
-}
-
-function _checkUserId(id: string) {
-  // use regular expression to check it literally
-  return true;
-}
-
 export default {
-  set webSocketUrl(url: string) {
+  set webSocketUrl(url: string | undefined) {
     _webSocketUrl = url;
   },
 
   connect: function () {
     _connect();
   },
-
   disconnect: function () {
     _disconnect();
   },
+
+  /**
+   * external signaling
+   */
 
   createNewRoomSignaling: function (roomName: string) {
     _createNewRoomSignaling(roomName);
@@ -287,9 +210,17 @@ export default {
     _leaveRoomSignaling();
   },
 
+  /**
+   * internal signaling
+   */
+
   passThroughSignaling: function (payload: unknown) {
     _passThroughSignaling(payload);
   },
+
+  /**
+   * external listeners
+   */
 
   onWebSocketOpen: function (handler: EventListener) {
     _handleWebSocketOpened = handler;
@@ -297,27 +228,27 @@ export default {
   onWebSocketClose: function (handler: EventListener) {
     _handleWebSocketClosed = handler;
   },
-
-  onJoinRoomInSuccess: function (handler: HandleSignalPayload) {
+  onJoinRoomInSuccess: function (handler: (payload: JoinRoomSuccessPayload) => void) {
     _handleJoinRoomSuccess = handler;
   },
-  onRoomsInfoUpdated: function (handler: HandleSignalPayload) {
+  onRoomsInfoUpdated: function (handler: (payload: UpdateRoomsPayload) => void) {
     _handleRoomsUpdated = handler;
   },
-  onLeaveRoomInSuccess: function (handler: HandleSignalPayload) {
+  onLeaveRoomInSuccess: function (handler: (payload: LeaveRoomSuccessPayload) => void) {
     _handleLeaveRoomSuccess = handler;
   },
 
-  onWebRTCNewPeerArivalExternally: function (handler: HandleSignalPayload) {
-    _handleNewPeerArivalExternally = handler;
-  },
-  onWebRTCNewPeerLeaved: function (handler: HandleSignalPayload) {
+  /**
+   * internal listeners
+   */
+
+  onWebRTCNewPeerLeaved: function (handler: (payload: NewPeerLeavePayload) => void) {
     _handleNewPeerLeaved = handler;
   },
-  onWebRTCNewPassthroughArival: function (handler: HandleSignalPayload) {
+  onWebRTCNewPassthroughArival: function (handler: (payload: IncomingPassthrough) => void) {
     _handleNewPassthroughArival = handler;
   },
-  onWebRTCNewPeerArivalInternally: function (handler: HandleSignalPayload) {
+  onWebRTCNewPeerArivalInternally: function (handler: (payload: NewPeerArivalPayload) => void) {
     _handleNewPeerArivalInternally = handler;
   },
 };

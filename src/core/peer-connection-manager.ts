@@ -8,9 +8,12 @@ import {
   NewPeerLeavePayload,
   OutgoingICEPassThrough,
   OutgoingSDPPassThrough,
+  NegotiatableDataChannel,
+  HandlePeersInfoChanged,
 } from "./common-types";
 import SignalingManager from "./signal-manager";
 import MediaCallingManager from "./media-calling-mananger";
+import DataChannelManager from "./data-channel-manager";
 
 class PeerConnection extends RTCPeerConnection implements NegotiatablePeerConnection {
   peerName?: string;
@@ -19,24 +22,21 @@ class PeerConnection extends RTCPeerConnection implements NegotiatablePeerConnec
   isSettingRemoteAnswerPending?: boolean;
   isLocalPoliteDuringOfferCollision?: boolean;
   callingConstraints?: CallingConstraints | null;
+  createDataChannel(label: string, dataChannelDict?: RTCDataChannelInit) {
+    return super.createDataChannel(label, dataChannelDict) as NegotiatableDataChannel;
+  }
 }
-
-type HandlePeersInfoChanged = (peersInfo: PeersInfo) => void;
-
 let _peerConnectionConfig: RTCConfiguration | undefined;
 let _handlePeersInfoChanged: HandlePeersInfoChanged | undefined;
 
 const _peerConnectionMap: PeerConnectionMap = {
   peerMap: new Map(),
-
   has(key) {
     return this.peerMap.has(key);
   },
-
   size() {
     return this.peerMap.size;
   },
-
   set(key, value) {
     const prevSize = this.peerMap.size;
     this.peerMap.set(key, value);
@@ -50,17 +50,14 @@ const _peerConnectionMap: PeerConnectionMap = {
       _handlePeersInfoChanged(this.getPeersInfo());
     }
   },
-
   get(key) {
     return this.peerMap.get(key);
   },
-
   findFirstPeerIdByPeerConnection: function (peerConnectionToFind: PeerConnection) {
     for (let [peerId, peerConnection] of this.peerMap.entries()) {
       if (peerConnection === peerConnectionToFind) return peerId;
     }
   },
-
   delete(key) {
     const prevSize = this.peerMap.size;
     this.peerMap.delete(key);
@@ -74,7 +71,6 @@ const _peerConnectionMap: PeerConnectionMap = {
       _handlePeersInfoChanged(this.getPeersInfo());
     }
   },
-
   clear() {
     const prevSize = this.peerMap.size;
     this.peerMap.clear();
@@ -87,11 +83,9 @@ const _peerConnectionMap: PeerConnectionMap = {
       _handlePeersInfoChanged(this.getPeersInfo());
     }
   },
-
   forEach(func) {
     this.peerMap.forEach(func);
   },
-
   getPeersInfo() {
     const peersInfo: PeersInfo = {};
     this.peerMap.forEach((peerConnection, peerId) => {
@@ -144,8 +138,20 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
     return;
   }
 
+  console.debug(
+    `WebRTCGroupChatController: before consuming this sdp, the current peerConnection signalingState is ${
+      peerConnection.signalingState
+    }, the localDescription type is ${
+      peerConnection.localDescription ? peerConnection.localDescription.type : "unknown"
+    }, the remoteDescription type is ${
+      peerConnection.remoteDescription ? peerConnection.remoteDescription.type : "unknown"
+    }`
+  );
+
   if ("iceCandidate" in incomingPassthrough) {
     const { iceCandidate } = incomingPassthrough;
+    console.debug(`WebRTCGroupChatController: this passthrough carries IceCandidate`, iceCandidate);
+
     peerConnection
       .addIceCandidate(iceCandidate)
       .then(() => {
@@ -164,68 +170,7 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
 
   const { sdp, callingConstraints } = incomingPassthrough;
 
-  // const peerId = payload.from;
-  // const { sdp, iceCandidate, callingConstraints } = payload;
-  // const isSDP = sdp !== undefined;
-  // const isICE = iceCandidate !== undefined;
-
-  // console.debug(
-  //   `WebRTCGroupChatController: does this passthrough carry sdp (${isSDP}${
-  //     isSDP ? "-" + sdp.type : ""
-  //   }) ? or ICE (${isICE}) ?`
-  // );
-
-  // if (!peerId || peerId.length === 0 || (!isSDP && !isICE)) {
-  //   console.debug(
-  //     `WebRTCGroupChatController: unexpected new passthrough ( sdp: ${sdp}, iceCandidate: ${iceCandidate} ) for peerId of ${peerId}, during '_handleNewPassthroughArival' method`
-  //   );
-  //   return;
-  // }
-
-  // const peerConnection = _locatePeerConnection(peerId);
-  // if (!peerConnection) {
-  //   console.debug(
-  //     `WebRTCGroupChatController: unexpected non-existent peer connection ( ${peerConnection} ) with peerId of ${peerId} after '_locatePeerConnection' method`
-  //   );
-  //   return;
-  // }
-
-  // console.debug(
-  //   `WebRTCGroupChatController: before consuming the new passthrough, the current peerConnection signalingState is ${
-  //     peerConnection.signalingState
-  //   }, the localDescription type is ${
-  //     peerConnection.localDescription ? peerConnection.localDescription.type : "unknown"
-  //   }, the remoteDescription type is ${
-  //     peerConnection.remoteDescription ? peerConnection.remoteDescription.type : "unknown"
-  //   }`
-  // );
-
-  // distinguish the type of new passthrough, and then process it based on its type
-  // if (isSDP && isICE) {
-  //   console.error(
-  //     `WebRTCGroupChatController: unexpected new passthrough type, it cannot be both 'SDP' and 'ICE'`
-  //   );
-  //   return;
-  // }
-
-  // console.debug(`WebRTCGroupChatController: start consuming the new passthrough ... ...`);
-
-  // if (isICE) {
-  //   peerConnection
-  //     .addIceCandidate(iceCandidate)
-  //     .then(() => {
-  //       console.debug(
-  //         `WebRTCGroupChatController: peerId (${peerId})'s 'addIceCandidate' done with no issue`
-  //       );
-  //     })
-  //     .catch((error) => {
-  //       // Suppress ignored offer's candidates
-  //       if (!peerConnection.ignoreRemoteOffer) {
-  //         console.error(`WebRTCGroupChatController: Found error with message of ${error}`);
-  //       }
-  //     });
-  //   return;
-  // }
+  console.debug(`WebRTCGroupChatController: this passthrough carries sdp (${sdp.type})`);
 
   const isPeerConnectionStable =
     peerConnection.signalingState == "stable" ||
@@ -344,7 +289,7 @@ function _addPeerConnection(peerId: string, peerName?: string) {
   peerConnection.oniceconnectionstatechange = _handlePeerConnectionICEConnectionStateChangeEvent;
   peerConnection.onnegotiationneeded = _handlePeerConnectionNegotiationEvent;
   peerConnection.ondatachannel = (event) => {
-    // DataChannelManager.handlePeerConnectionDataChannelEvent(event, peerId, peerName);
+    DataChannelManager.handlePeerConnectionDataChannelEvent(event, peerId, peerName);
   };
 
   peerConnection.ontrack = (event) => {
@@ -471,14 +416,12 @@ function _closeALLPeerConnections() {
 }
 
 /**
- *
- * Utils
+ * Binding to signaling manager
  */
 
-function _checkPeerConnectionConfig(config: RTCConfiguration) {
-  // use regular expression to check it literally
-  return true;
-}
+SignalingManager.onWebRTCNewPeerLeaved(_handleNewPeerLeave);
+SignalingManager.onWebRTCNewPassthroughArival(_handleNewPassthroughArival);
+SignalingManager.onWebRTCNewPeerArivalInternally(_handleNewPeerArivalInternally);
 
 export default {
   set peerConnectionConfig(config: RTCConfiguration) {

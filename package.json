@@ -1,13 +1,12 @@
 {
   "name": "webrtc-group-chat-service",
   "version": "1.0.3",
-  "description": "A typescript library to provide data service for webrtc group chat features including video calling, screen sharing, text messaging and file transceiving with low lantency",
+  "description": "A typescript library to provide data layer webrtc group chat features including video calling, screen sharing, text messaging and file transceiving with low lantency",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "tsc": "tsc",
-    "version": "npm run tsc && git add .",
+    "version": "tsc && git add .",
     "postversion": "git push && git push --tags"
   },
   "repository": {

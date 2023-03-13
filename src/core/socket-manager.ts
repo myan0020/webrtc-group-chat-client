@@ -1,13 +1,5 @@
 import ReconnectingAliveSocket, { ReconnectingAliveSocketEvent } from "reconnecting-alive-socket";
-
-interface EventListenerContainer {
-  open?: EventListener;
-  error?: EventListener;
-  close?: EventListener;
-  message?: EventListener[];
-}
-
-type HandleMessagePayload = (payload: unknown) => void;
+import { EventListenerContainer, HandleMessagePayload } from "./common-types";
 
 const _socketMap: Map<string, ReconnectingAliveSocket> = new Map();
 const _eventListenerMap: Map<string, EventListenerContainer> = new Map();
