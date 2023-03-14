@@ -1,6 +1,6 @@
 {
   "name": "webrtc-group-chat-service",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A typescript library to provide data layer webrtc group chat features including video calling, screen sharing, text messaging and file transceiving with low lantency",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
