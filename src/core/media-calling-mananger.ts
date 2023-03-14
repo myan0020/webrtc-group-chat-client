@@ -886,6 +886,8 @@ function _changeCallingState(callingStateChangingType: CallingStateChangingType)
     case CallingStateChangingType.START_UP_CALLING:
       {
         if (_isCalling) return;
+
+        _isCalling = true;
         if (_handleCallingStateChanged) {
           _handleCallingStateChanged(_isCalling);
         }
@@ -894,6 +896,7 @@ function _changeCallingState(callingStateChangingType: CallingStateChangingType)
     case CallingStateChangingType.HANG_UP_CALLING:
       {
         if (!_isCalling) return;
+        
         _isCalling = false;
         if (_handleCallingStateChanged) {
           _handleCallingStateChanged(_isCalling);
