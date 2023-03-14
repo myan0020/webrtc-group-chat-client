@@ -39,7 +39,7 @@ function _resetRTCRelatedState() {
   DataChannelManager.clearReceivingRelatedData();
 }
 
-export type {
+export {
   JoinRoomSuccessPayload,
   UpdateRoomsPayload,
   LeaveRoomSuccessPayload,
