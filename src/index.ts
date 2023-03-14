@@ -17,6 +17,8 @@ import {
   ReceivingRelatedDataProxy,
   SendingRelatedDataProxy,
   UpdateRoomsPayload,
+  SendingSliceName,
+  ReceivingSliceName,
 } from "./core/common-types";
 import SignalingManager from "./core/signal-manager";
 import PeerConnectionManager from "./core/peer-connection-manager";
@@ -48,6 +50,8 @@ export type {
   CallingInputType,
   LocalMediaContext,
   PeerMediaContextMapProxy,
+  SendingSliceName,
+  ReceivingSliceName,
 };
 
 export default {
