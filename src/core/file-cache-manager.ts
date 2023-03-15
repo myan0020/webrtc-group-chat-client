@@ -854,13 +854,18 @@ function _mergeIDBReceivingBufferIfNeeded(
     request.onsuccess = function (event) {
       console.debug(
         `FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request to open cursor of receiving buffer onsuccess`,
-        event
+        event,
       );
 
       if (!(event.target instanceof IDBRequest)) {
         console.error(`FileDataStore: during fetching out IDBReceivingBuffer for merging, unexpected event target instance type`, event.target);
         return;
       }
+
+      console.debug(
+        `FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request to open cursor of receiving buffer onsuccess`,
+        event.target.result,
+      );
       // if (!event.target.result) {
       //   console.debug(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request result is empty`, event.target);
       //   return;
