@@ -1,7 +1,7 @@
 {
-  "name": "webrtc-group-chat-service",
+  "name": "webrtc-group-chat-client",
   "version": "1.0.14",
-  "description": "A typescript library to provide data layer webrtc group chat features including video calling, screen sharing, text messaging and file transceiving with low lantency",
+  "description": "A browser side library, using W3C WebRTC API and simple mesh architecture, providing only data-layer service, aims to help anyone who wants to build WebRTC group chatting related web apps",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/myan0020/webrtc-group-chat-service.git"
+    "url": "git+https://github.com/myan0020/webrtc-group-chat-client.git"
   },
   "keywords": [
     "webrtc"
@@ -19,7 +19,7 @@
   "author": "MingDongShenSen",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/myan0020/webrtc-group-chat-service/issues"
+    "url": "https://github.com/myan0020/webrtc-group-chat-client/issues"
   },
   "files": [
     "lib/**/*"
@@ -27,7 +27,7 @@
   "exports": {
     ".": "./lib/index.js"
   },
-  "homepage": "https://github.com/myan0020/webrtc-group-chat-service#readme",
+  "homepage": "https://github.com/myan0020/webrtc-group-chat-client#readme",
   "devDependencies": {
     "typescript": "^4.9.5"
   },
