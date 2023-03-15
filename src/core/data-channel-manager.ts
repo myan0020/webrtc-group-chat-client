@@ -395,7 +395,7 @@ function _createAndStoreDataChannel(
   const channel = peerConnection.createDataChannel(label);
 
   console.debug(
-    `WebRTCGroupChatController: a new data channel of label(${label}) for a peer(${peerId}) has been created`
+    `WebRTCGroupChatController: a new data channel of label(${label}) for a peer(${peerId}) has been created`, channel
   );
 
   if (options) {

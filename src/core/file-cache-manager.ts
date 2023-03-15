@@ -862,21 +862,8 @@ function _mergeIDBReceivingBufferIfNeeded(
         return;
       }
 
-      console.debug(
-        `FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request to open cursor of receiving buffer onsuccess`,
-        event.target.result,
-      );
-      // if (!event.target.result) {
-      //   console.debug(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request result is empty`, event.target);
-      //   return;
-      // }
-      // if (!(event.target.result instanceof IDBCursorWithValue)) {
-      //   console.error(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request result instance type is unexpected`, event.target);
-      //   return;
-      // }
-
-      const cursor = event.target.result;
-      if (cursor) {
+      if (event.target.result instanceof IDBCursorWithValue) {
+        const cursor = event.target.result;
         console.debug(
           `FileDataStore: during fetching out IDBReceivingBuffer for merging, it is a valid cursor of receiving buffer including startOffset (${cursor.value.startOffset})`
         );
@@ -994,17 +981,9 @@ function _mergeIDBReceivingBufferIfNeeded(
               console.error(`FileDataStore: during deleting IDBReceivingBuffer after merging, unexpected event target instance type`, event.target);
               return;
             }
-            if (!event.target.result) {
-              console.debug(`FileDataStore: during deleting IDBReceivingBuffer after merging, IDB request result is empty`, event.target);
-              return;
-            }
-            if (!(event.target.result instanceof IDBCursor)) {
-              console.error(`FileDataStore: during deleting IDBReceivingBuffer after merging, IDB request result instance type is unexpected`, event.target);
-              return;
-            }
-
-            const cursor = event.target.result;
-            if (cursor) {
+            
+            if (event.target.result instanceof IDBCursor) {
+              const cursor = event.target.result;
               const request = store.delete(cursor.primaryKey);
               request.onsuccess = function (event) {
                 console.debug(`FileDataStore: during deleting IDBReceivingBuffer after merging, requesting to delete a buffer onsuccuess`, event);
@@ -1116,17 +1095,9 @@ function _resetIDBReceivingBuffer(peerId: string, fileHash: string, IDBDatabase:
         console.error(`FileDataStore: during resetIDBReceivingBuffer, event target instance type is unexpected`, event.target);
         return;
       }
-      if (!event.target.result) {
-        console.debug(`FileDataStore: during resetIDBReceivingBuffer, IDB request result is empty`, event.target);
-        return;
-      }
-      if (!(event.target.result instanceof IDBCursor)) {
-        console.error(`FileDataStore: during resetIDBReceivingBuffer, IDB request result instance type is unexpected`, event.target);
-        return;
-      }
-
-      const cursor = event.target.result;
-      if (cursor) {
+      
+      if (event.target.result instanceof IDBCursor) {
+        const cursor = event.target.result;
         const request = store.delete(cursor.primaryKey);
         request.onsuccess = function (event) {
           console.debug(`FileDataStore: during resetIDBReceivingBuffer, IDB request to delete a receiving buffer onsuccess`, event);
@@ -1197,19 +1168,15 @@ function _resetIDBReceivingBufferMergedFiles(fileIds: string[], IDBDatabase: IDB
           console.error(`FileDataStore: unexpected event target instance type`, event.target);
           return;
         }
-        if (!(event.target.result instanceof IDBCursor)) {
-          console.error(`FileDataStore: unexpected IDB request result instance type`, event.target);
-          return;
-        }
 
-        const cursor = event.target.result;
+        if (event.target.result instanceof IDBCursor) {
+          const cursor = event.target.result;
 
-        console.debug(
-          `FileDataStore: IDB request to open cursor of receiving buffer merged file 'onsuccess' with a primaryKey(${cursor.primaryKey})`,
-          event
-        );
+          console.debug(
+            `FileDataStore: IDB request to open cursor of receiving buffer merged file 'onsuccess' with a primaryKey(${cursor.primaryKey})`,
+            event
+          );
 
-        if (cursor) {
           const fileId = cursor.primaryKey;
           if (typeof fileId === "string" && intersectingFileIds.includes(fileId)) {
             const request = store.delete(fileId);
