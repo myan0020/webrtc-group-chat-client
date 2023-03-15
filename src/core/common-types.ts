@@ -362,6 +362,7 @@ export type IDBDatabasePromise = Promise<IDBDatabase>;
 export enum IDBBufferPersistingPromiseFulFilledType {
   FULFILLED_RESETTING = "IDBBufferPersistingPromiseFulFilledType_fulfilled_resetting",
   FULFILLED_ADDING = "IDBBufferPersistingPromiseFulFilledType_fulfilled_adding",
+  FULFILLED_MERGING = "IDBBufferPersistingPromiseFulFilledType_fulfilled_merging",
   FULFILLED_ERROR = "IDBBufferPersistingPromiseFulFilledType_fulfilled_error",
 }
 

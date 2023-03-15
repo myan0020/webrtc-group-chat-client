@@ -485,6 +485,7 @@ function _scheduleAddBufferTask(
   buffer: ArrayBuffer
 ) {
   const addIDBBufferTask = (fulFillment: IDBBufferPersistingPromiseFulfillment) => {
+    console.debug(`FileDataStore: during addIDBBufferTask, use fulFillment`, fulFillment)
     const startOffset = fulFillment.fulFilledAtOffset;
     if (startOffset === undefined) {
       console.error(`FileDataStore: skipped an invalid startOffset of ${startOffset}`);
@@ -739,21 +740,21 @@ function _addIDBReceivingBuffer(
     let isOperationSuccessful = true;
 
     request.onsuccess = function (event) {
-      console.debug(`FileDataStore: IDB request to add(put) receiving buffer onsuccess`, event);
+      console.debug(`FileDataStore: during addIDBReceivingBuffer, IDB request to add(put) receiving buffer onsuccess`, event);
     };
     request.onerror = function (event) {
       console.error(
-        `FileDataStore: IDB request to add(put) receiving buffer onerror, start to rollback`,
+        `FileDataStore: during addIDBReceivingBuffer, IDB request to add(put) receiving buffer onerror, start to rollback`,
         event
       );
       isOperationSuccessful = false;
     };
     transaction.onerror = (event) => {
-      console.error(`FileDataStore: IDB transaction to add(put) receiving buffer onerror`, event);
+      console.error(`FileDataStore: during addIDBReceivingBuffer, IDB transaction to add(put) receiving buffer onerror`, event);
     };
     transaction.oncomplete = (event) => {
       console.debug(
-        `FileDataStore: IDB transaction to add(put) receiving buffer of a file (${fileHash}) for a peer (${peerId}) from startOffset (${startOffset}) oncomplete`,
+        `FileDataStore: during addIDBReceivingBuffer, IDB transaction to add(put) receiving buffer of a file (${fileHash}) for a peer (${peerId}) from startOffset (${startOffset}) oncomplete`,
         isOperationSuccessful
       );
 
@@ -763,7 +764,7 @@ function _addIDBReceivingBuffer(
       }
 
       if (_receivingCancelledMap.getCancelled(peerId, fileHash)) {
-        console.debug(`FileDataStore: due to receiving cancelled`);
+        console.debug(`FileDataStore: during addIDBReceivingBuffer, due to receiving cancelled`);
 
         // perform IDB rollback because of a receiving file cancelled
         const transaction = IDBDatabase.transaction(_IDBReceivingBufferStoreName, "readwrite");
@@ -771,19 +772,19 @@ function _addIDBReceivingBuffer(
         const request = store.delete(_buildBufferId(peerId, fileHash, startOffset));
         request.onsuccess = function (event) {
           console.debug(
-            `FileDataStore: IDB manaully rollbacking request to delete receiving buffer onsuccess`,
+            `FileDataStore: during addIDBReceivingBuffer, IDB manaully rollbacking request to delete receiving buffer onsuccess`,
             event
           );
         };
         request.onerror = function (event) {
           console.error(
-            `FileDataStore: IDB manaully rollbacking request to delete receiving buffer onerror`,
+            `FileDataStore: during addIDBReceivingBuffer, IDB manaully rollbacking request to delete receiving buffer onerror`,
             event
           );
         };
         transaction.oncomplete = (event) => {
           console.debug(
-            `FileDataStore: IDB manaully rollbacking transaction to delete receiving buffer of a file (${fileHash}) for a peer (${peerId}) from startOffset (${startOffset}) oncomplete`
+            `FileDataStore: during addIDBReceivingBuffer, IDB manaully rollbacking transaction to delete receiving buffer of a file (${fileHash}) for a peer (${peerId}) from startOffset (${startOffset}) oncomplete`
           );
         };
 
@@ -830,13 +831,13 @@ function _mergeIDBReceivingBufferIfNeeded(
     const transaction = IDBDatabase.transaction(_IDBReceivingBufferStoreName, "readonly");
     transaction.oncomplete = (event) => {
       console.debug(
-        `FileDataStore: IDB transaction to merge IDB receiving buffer for a file (${fileHash}) and a peer (${peerId}) oncomplete`,
+        `FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB transaction to merge IDB receiving buffer for a file (${fileHash}) and a peer (${peerId}) oncomplete`,
         event
       );
     };
     transaction.onerror = (event) => {
       console.debug(
-        `FileDataStore: IDB transaction to merge IDB receiving buffer for a file (${fileHash}) and a peer (${peerId}) onerror`,
+        `FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB transaction to merge IDB receiving buffer for a file (${fileHash}) and a peer (${peerId}) onerror`,
         event
       );
       reject();
@@ -847,28 +848,32 @@ function _mergeIDBReceivingBufferIfNeeded(
     const bufferWrapperList: ReceivingIDBBufferWrapper[] = [];
 
     request.onerror = function (event) {
-      console.error(`FileDataStore: IDB request to open cursor of receiving buffer onerror`, event);
+      console.error(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request to open cursor of receiving buffer onerror`, event);
       reject();
     };
     request.onsuccess = function (event) {
       console.debug(
-        `FileDataStore: IDB request to open cursor of receiving buffer onsuccess`,
+        `FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request to open cursor of receiving buffer onsuccess`,
         event
       );
 
       if (!(event.target instanceof IDBRequest)) {
-        console.error(`FileDataStore: unexpected event target instance type`, event.target);
+        console.error(`FileDataStore: during fetching out IDBReceivingBuffer for merging, unexpected event target instance type`, event.target);
+        return;
+      }
+      if (!event.target.result) {
+        console.debug(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request result is empty`, event.target);
         return;
       }
       if (!(event.target.result instanceof IDBCursorWithValue)) {
-        console.error(`FileDataStore: unexpected IDB request result instance type`, event.target);
+        console.error(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request result instance type is unexpected`, event.target);
         return;
       }
 
       const cursor = event.target.result;
       if (cursor) {
         console.debug(
-          `FileDataStore: it is a valid cursor of receiving buffer including startOffset (${cursor.value.startOffset})`
+          `FileDataStore: during fetching out IDBReceivingBuffer for merging, it is a valid cursor of receiving buffer including startOffset (${cursor.value.startOffset})`
         );
 
         const record = cursor.value;
@@ -880,8 +885,13 @@ function _mergeIDBReceivingBufferIfNeeded(
         cursor.continue();
       } else {
         console.debug(
-          `FileDataStore: ending up with a invalid cursor of receiving buffer, time to creat a file with a buffer wrapper list of`,
+          `FileDataStore: during fetching out IDBReceivingBuffer for merging, ending up with a invalid cursor of receiving buffer, time to creat a file with a buffer wrapper list of`,
           bufferWrapperList
+        );
+
+        console.debug(
+          `FileDataStore: during merging all IDBReceivingBuffer into one file, merging starts`,
+          event
         );
 
         // merge a list of arraybuffer into a file
@@ -895,6 +905,11 @@ function _mergeIDBReceivingBufferIfNeeded(
           lastModified: metaData.lastModified,
         });
 
+        console.debug(
+          `FileDataStore: during merging all IDBReceivingBuffer into one file, merging in success`,
+          event
+        );
+
         // add the file into IDB
         const transaction = IDBDatabase.transaction(_IDBReceivingFileStoreName, "readwrite");
         const store = transaction.objectStore(_IDBReceivingFileStoreName);
@@ -905,27 +920,27 @@ function _mergeIDBReceivingBufferIfNeeded(
 
         request.onsuccess = function (event) {
           console.debug(
-            `FileDataStore: IDB request to add(put) a merged receiving file onsuccess`,
+            `FileDataStore: during storing the merged file, IDB request to add(put) a merged receiving file onsuccess`,
             event
           );
         };
         request.onerror = function (event) {
           console.error(
-            `FileDataStore: IDB request to add(put) a merged receiving file onerror`,
+            `FileDataStore: during  storing the merged file, IDB request to add(put) a merged receiving file onerror`,
             event
           );
           reject();
         };
         transaction.onerror = (event) => {
           console.debug(
-            `FileDataStore: IDB transaction to add(put) a merged receiving file (${fileHash}) for a peer (${peerId}) onerror`,
+            `FileDataStore: during  storing the merged file, IDB transaction to add(put) a merged receiving file (${fileHash}) for a peer (${peerId}) onerror`,
             event
           );
           reject();
         };
         transaction.oncomplete = (event) => {
           console.debug(
-            `FileDataStore: IDB transaction to add(put) a merged receiving file (${fileHash}) for a peer (${peerId}) oncomplete`,
+            `FileDataStore: during  storing the merged file, IDB transaction to add(put) a merged receiving file (${fileHash}) for a peer (${peerId}) oncomplete`,
             event
           );
 
@@ -939,42 +954,47 @@ function _mergeIDBReceivingBufferIfNeeded(
           const transaction = IDBDatabase.transaction(_IDBReceivingBufferStoreName, "readwrite");
           transaction.onerror = (event) => {
             console.debug(
-              `FileDataStore: IDB transaction to delete all receiving buffer for a file (${fileHash}) and a peer (${peerId}) onerror`,
+              `FileDataStore: during deleting IDBReceivingBuffer after merging, IDB transaction to delete all receiving buffer for a file (${fileHash}) and a peer (${peerId}) onerror`,
               event
             );
             reject();
           };
           transaction.oncomplete = (event) => {
             console.debug(
-              `FileDataStore: IDB transaction delete all receiving buffer for a file (${fileHash}) and a peer (${peerId}) oncomplete`,
+              `FileDataStore: during deleting IDBReceivingBuffer after merging, IDB transaction delete all receiving buffer for a file (${fileHash}) and a peer (${peerId}) oncomplete`,
               event
             );
+            resolve({
+              fulFilledType: IDBBufferPersistingPromiseFulFilledType.FULFILLED_MERGING,
+              fulFilledAtOffset: 0,
+            });
           };
           const store = transaction.objectStore(_IDBReceivingBufferStoreName);
           const index = store.index("fileId_idx");
           const request = index.openCursor(IDBKeyRange.only(_buildFileId(peerId, fileHash)));
           request.onerror = function (event) {
             console.error(
-              `FileDataStore: IDB request to open cursor of receiving buffer onerror`,
+              `FileDataStore: during deleting IDBReceivingBuffer after merging, IDB request to open cursor of receiving buffer onerror`,
               event
             );
             reject();
           };
           request.onsuccess = function (event) {
             console.debug(
-              `FileDataStore: IDB request to open cursor of receiving buffer onsuccess`,
+              `FileDataStore: during deleting IDBReceivingBuffer after merging, IDB request to open cursor of receiving buffer onsuccess`,
               event
             );
 
             if (!(event.target instanceof IDBRequest)) {
-              console.error(`FileDataStore: unexpected event target instance type`, event.target);
+              console.error(`FileDataStore: during deleting IDBReceivingBuffer after merging, unexpected event target instance type`, event.target);
+              return;
+            }
+            if (!event.target.result) {
+              console.debug(`FileDataStore: during deleting IDBReceivingBuffer after merging, IDB request result is empty`, event.target);
               return;
             }
             if (!(event.target.result instanceof IDBCursor)) {
-              console.error(
-                `FileDataStore: unexpected IDB request result instance type`,
-                event.target
-              );
+              console.error(`FileDataStore: during deleting IDBReceivingBuffer after merging, IDB request result instance type is unexpected`, event.target);
               return;
             }
 
@@ -982,12 +1002,10 @@ function _mergeIDBReceivingBufferIfNeeded(
             if (cursor) {
               const request = store.delete(cursor.primaryKey);
               request.onsuccess = function (event) {
-                resolve({
-                  fulFilledType: IDBBufferPersistingPromiseFulFilledType.FULFILLED_ADDING,
-                  fulFilledAtOffset: 0,
-                } as IDBBufferPersistingPromiseFulfillment);
+                console.debug(`FileDataStore: during deleting IDBReceivingBuffer after merging, requesting to delete a buffer onsuccuess`, event);
               };
               request.onerror = function (event) {
+                console.debug(`FileDataStore: during deleting IDBReceivingBuffer after merging, requesting to delete a buffer onerror`, event);
                 reject();
               };
               cursor.continue();
@@ -1085,16 +1103,20 @@ function _resetIDBReceivingBuffer(peerId: string, fileHash: string, IDBDatabase:
 
     request.onsuccess = function (event) {
       console.debug(
-        `FileDataStore: IDB request to open cursor of receiving buffer onsuccess`,
+        `FileDataStore: during resetIDBReceivingBuffer, IDB request to open cursor of receiving buffer onsuccess`,
         event
       );
 
       if (!(event.target instanceof IDBRequest)) {
-        console.error(`FileDataStore: unexpected event target instance type`, event.target);
+        console.error(`FileDataStore: during resetIDBReceivingBuffer, event target instance type is unexpected`, event.target);
+        return;
+      }
+      if (!event.target.result) {
+        console.debug(`FileDataStore: during resetIDBReceivingBuffer, IDB request result is empty`, event.target);
         return;
       }
       if (!(event.target.result instanceof IDBCursor)) {
-        console.error(`FileDataStore: unexpected IDB request result instance type`, event.target);
+        console.error(`FileDataStore: during resetIDBReceivingBuffer, IDB request result instance type is unexpected`, event.target);
         return;
       }
 
@@ -1102,22 +1124,22 @@ function _resetIDBReceivingBuffer(peerId: string, fileHash: string, IDBDatabase:
       if (cursor) {
         const request = store.delete(cursor.primaryKey);
         request.onsuccess = function (event) {
-          console.debug(`FileDataStore: IDB request to delete a receiving buffer onsuccess`, event);
+          console.debug(`FileDataStore: during resetIDBReceivingBuffer, IDB request to delete a receiving buffer onsuccess`, event);
         };
         request.onerror = function (event) {
-          console.error(`FileDataStore: IDB request to delete a receiving buffer onerror`, event);
+          console.error(`FileDataStore: during resetIDBReceivingBuffer, IDB request to delete a receiving buffer onerror`, event);
           isOperationSuccessful = false;
         };
         cursor.continue();
       }
     };
     request.onerror = function (event) {
-      console.error(`FileDataStore: IDB request to open cursor of receiving buffer onerror`, event);
+      console.error(`FileDataStore: during resetIDBReceivingBuffer, IDB request to open cursor of receiving buffer onerror`, event);
       isOperationSuccessful = false;
     };
     transaction.oncomplete = () => {
       console.debug(
-        `FileDataStore: IDB transaction to open cursor and delete receiving buffer of a file (${fileHash}) for a peer (${peerId}) oncomplete`
+        `FileDataStore: during resetIDBReceivingBuffer, IDB transaction to open cursor and delete receiving buffer of a file (${fileHash}) for a peer (${peerId}) oncomplete`
       );
 
       if (!isOperationSuccessful) {
