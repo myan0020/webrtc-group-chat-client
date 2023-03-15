@@ -1,8 +1,8 @@
 import { FileHashToFile } from "./common-types";
 
-export async function getUniqueFiles(files: File[]) {
+export async function getUniqueFiles(files: File[], timestamp?: number) {
   const filesToAdd: FileHashToFile = {};
-  const timestampString = `${new Date().valueOf()}`;
+  const timestampString = typeof timestamp === "number" ? `${timestamp}` : `${new Date().valueOf()}`;
 
   for (const file of Array.from(files)) {
     const fileDataString = file.name + file.type + file.size + file.lastModified + timestampString;

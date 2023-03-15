@@ -213,8 +213,9 @@ function _sendFileToAllPeer(peerConnectionMap: PeerConnectionMap, files: File[])
   FileCacheManager.clearSendingCancelled();
 
   // then, make file sending tasks for each peer connected
+  const timestamp = new Date().valueOf();
   peerConnectionMap.forEach((peerConnection, peerId) => {
-    _sendFileToPeer(files, peerId, peerConnection);
+    _sendFileToPeer(files, peerId, peerConnection, timestamp);
   });
 }
 
@@ -222,7 +223,8 @@ function _sendFileToAllPeer(peerConnectionMap: PeerConnectionMap, files: File[])
 async function _sendFileToPeer(
   files: File[],
   peerId: string,
-  peerConnection: NegotiatablePeerConnection
+  peerConnection: NegotiatablePeerConnection,
+  timestamp?: number
 ) {
   if (!files) {
     console.debug(
@@ -232,7 +234,7 @@ async function _sendFileToPeer(
   }
 
   // transform the files into a file hash to file meta data
-  const fileHashToFile = await getUniqueFiles(files);
+  const fileHashToFile = await getUniqueFiles(files, timestamp);
   FileCacheManager.prepareSendingMetaData(fileHashToFile);
 
   // create and store a data channel to transfer the prepared file hash to file meta data object
