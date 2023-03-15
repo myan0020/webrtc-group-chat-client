@@ -49,7 +49,7 @@ const _sendingRelatedData: SendingRelatedData = {
   fileHashToAllSlices: {},
   updateSendingStatus(isSendingStatusSending) {
     console.debug(
-      `FileDataStore: the sending related data is updated to`,
+      `WebRTCGroupChatService: the sending related data is updated to`,
       this,
       `by sending status of isSending(${isSendingStatusSending})`
     );
@@ -74,7 +74,7 @@ const _sendingRelatedData: SendingRelatedData = {
 
     // unified log
     console.debug(
-      `FileDataStore: the sending related data is updated to`,
+      `WebRTCGroupChatService: the sending related data is updated to`,
       this,
       `with`,
       `a slice key ('${sliceName}') and`,
@@ -118,7 +118,7 @@ const _receivingRelatedData: ReceivingRelatedData = {
 
     // unified log
     console.debug(
-      `FileDataStore: the receiving related data updated to`,
+      `WebRTCGroupChatService: the receiving related data updated to`,
       this,
       `with`,
       `a slice key ('${sliceName}') and`,
@@ -163,7 +163,7 @@ function _prepareSendingMetaData(hashToFile: FileHashToFile) {
   }
 
   console.debug(
-    `FileDataStore: new sending file hash to file meta data object of`,
+    `WebRTCGroupChatService: new sending file hash to file meta data object of`,
     _sendingHashToMetaData,
     `prepared`
   );
@@ -182,7 +182,7 @@ function _checkIfSendingMetaDataPrepared(hashToFile: FileHashToFile) {
   }
 
   console.debug(
-    `FileDataStore: the current sending file hash to file meta data object of`,
+    `WebRTCGroupChatService: the current sending file hash to file meta data object of`,
     _sendingHashToMetaData,
     `is ${checkingPassed ? "" : "not"} prepared for file buffer sending`
   );
@@ -261,7 +261,7 @@ class TranceivingProgressMap implements MappableTranceivingProgress {
     this.peerMap.set(peerId, fileHashToProgress);
 
     console.debug(
-      `FileDataStore: setting progress (${progress}) of a file (${fileHash}) for a peer (${peerId}) completed`
+      `WebRTCGroupChatService: setting progress (${progress}) of a file (${fileHash}) for a peer (${peerId}) completed`
     );
 
     if (this.isSending) {
@@ -289,7 +289,7 @@ class TranceivingProgressMap implements MappableTranceivingProgress {
     this.setProgress(peerId, fileHash, curProgress);
 
     console.debug(
-      `FileDataStore: adding the additional progress ( ${additionalProgress} ) for a given file hash ( ${fileHash} ) to a given peer ( ${peerId} ) completed`
+      `WebRTCGroupChatService: adding the additional progress ( ${additionalProgress} ) for a given file hash ( ${fileHash} ) to a given peer ( ${peerId} ) completed`
     );
 
     return curProgress;
@@ -299,7 +299,7 @@ class TranceivingProgressMap implements MappableTranceivingProgress {
   resetProgress(peerId: string, fileHash: string) {
     this.setProgress(peerId, fileHash, 0);
     console.debug(
-      `FileDataStore: resetting progress for a given file hash (${fileHash}) to a given peer (${peerId}) completed`
+      `WebRTCGroupChatService: resetting progress for a given file hash (${fileHash}) to a given peer (${peerId}) completed`
     );
   }
 
@@ -339,7 +339,7 @@ function _sendingHashToMinProgress(
     sendingHashToMinProgress[fileHash] = minProgress;
   });
   console.debug(
-    `FileDataStore: when computing completed, the entire sending hash to sending min progress is`,
+    `WebRTCGroupChatService: when computing completed, the entire sending hash to sending min progress is`,
     sendingHashToMinProgress
   );
 
@@ -358,7 +358,7 @@ function _isSendingStatusSending(
   let isSending = false;
 
   if (!sendingHashToMinProgress || !sendingHashToMetaData) {
-    console.debug(`FileDataStore: unexpected params when getting sending status`);
+    console.debug(`WebRTCGroupChatService: unexpected params when getting sending status`);
     return isSending;
   }
 
@@ -372,7 +372,7 @@ function _isSendingStatusSending(
     const minProgress = sendingHashToMinProgress[fileHash];
     if (!metaData || typeof metaData.size !== "number" || typeof minProgress !== "number") {
       console.debug(
-        `FileDataStore: unexpected sending meta data for a file hash (${fileHash}) in a sending file hash to meta data of`,
+        `WebRTCGroupChatService: unexpected sending meta data for a file hash (${fileHash}) in a sending file hash to meta data of`,
         sendingHashToMetaData
       );
       return isSending;
@@ -415,7 +415,7 @@ const _receivingHashToMetaDataMap: ReceivingPeerMapOfHashToMeta = {
     this.peerMap.set(peerId, hashToMetaData);
 
     console.debug(
-      `FileDataStore: overwritting with a receiving file hash to meta data object of`,
+      `WebRTCGroupChatService: overwritting with a receiving file hash to meta data object of`,
       hashToMetaData,
       `for a peer (${peerId}) completed`
     );
@@ -432,7 +432,7 @@ const _receivingHashToMetaDataMap: ReceivingPeerMapOfHashToMeta = {
     this.overwriteHashToMetaData(peerId, merged);
 
     console.debug(
-      `FileDataStore: merging a file hash to meta data object`,
+      `WebRTCGroupChatService: merging a file hash to meta data object`,
       hashToMetaData,
       `into the current one(if exist) for a peer (${peerId}) has been completed`
     );
@@ -452,14 +452,14 @@ const _receivingHashToMetaDataMap: ReceivingPeerMapOfHashToMeta = {
 function _addReceivingBuffer(peerId: string, fileHash: string, buffer: ArrayBuffer) {
   if (_receivingCancelledMap.getCancelled(peerId, fileHash)) {
     console.debug(
-      `FileDataStore: a receiving buffer of a file (${fileHash}) for a peer (${peerId}) cancelled during adding it`
+      `WebRTCGroupChatService: a receiving buffer of a file (${fileHash}) for a peer (${peerId}) cancelled during adding it`
     );
     return;
   }
 
   if (!_IDBDatabasePromise) {
     console.error(
-      `FileDataStore: unfound IDB promise during adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
+      `WebRTCGroupChatService: unfound IDB promise during adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
     );
     return;
   }
@@ -468,7 +468,7 @@ function _addReceivingBuffer(peerId: string, fileHash: string, buffer: ArrayBuff
     .then((IDBDatabase) => {
       if (!IDBDatabase) {
         throw new Error(
-          `FileDataStore: unfound IDB during adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
+          `WebRTCGroupChatService: unfound IDB during adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
         );
       }
       _scheduleAddBufferTask(peerId, fileHash, IDBDatabase, buffer);
@@ -485,10 +485,10 @@ function _scheduleAddBufferTask(
   buffer: ArrayBuffer
 ) {
   const addIDBBufferTask = (fulFillment: IDBBufferPersistingPromiseFulfillment) => {
-    console.debug(`FileDataStore: during addIDBBufferTask, use fulFillment`, fulFillment)
+    console.debug(`WebRTCGroupChatService: during addIDBBufferTask, use fulFillment`, fulFillment);
     const startOffset = fulFillment.fulFilledAtOffset;
     if (startOffset === undefined) {
-      console.error(`FileDataStore: skipped an invalid startOffset of ${startOffset}`);
+      console.error(`WebRTCGroupChatService: skipped an invalid startOffset of ${startOffset}`);
       return new Promise<IDBBufferPersistingPromiseFulfillment>((resolve, reject) => {
         resolve({
           fulFilledType: IDBBufferPersistingPromiseFulFilledType.FULFILLED_ERROR,
@@ -500,14 +500,14 @@ function _scheduleAddBufferTask(
   };
   _receivingBufferIDBPersistingSchedulerMap.scheduleNextTask(peerId, fileHash, addIDBBufferTask);
   console.debug(
-    `FileDataStore: scheduled adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
+    `WebRTCGroupChatService: scheduled adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
   );
 }
 
 function _resetReceivingBuffer(peerId: string, fileHash: string) {
   if (!_IDBDatabasePromise) {
     console.error(
-      `FileDataStore: unfound IDB promise during resetting receiving buffer of a file (${fileHash}) for a peer (${peerId})`
+      `WebRTCGroupChatService: unfound IDB promise during resetting receiving buffer of a file (${fileHash}) for a peer (${peerId})`
     );
     return;
   }
@@ -516,7 +516,7 @@ function _resetReceivingBuffer(peerId: string, fileHash: string) {
     .then((IDBDatabase) => {
       if (!IDBDatabase) {
         throw new Error(
-          `FileDataStore: unfound IDB during resetting receiving buffer of a file (${fileHash}) for a peer (${peerId})`
+          `WebRTCGroupChatService: unfound IDB during resetting receiving buffer of a file (${fileHash}) for a peer (${peerId})`
         );
       }
       _scheduleResetBufferTask(peerId, fileHash, IDBDatabase);
@@ -533,20 +533,24 @@ function _scheduleResetBufferTask(peerId: string, fileHash: string, IDBDatabase:
   };
   _receivingBufferIDBPersistingSchedulerMap.scheduleNextTask(peerId, fileHash, resetIDBBufferTask);
   console.debug(
-    `FileDataStore: scheduled resetting receiving buffer of a file (${fileHash}) for a peer (${peerId})`
+    `WebRTCGroupChatService: scheduled resetting receiving buffer of a file (${fileHash}) for a peer (${peerId})`
   );
 }
 
 function _resetAllReceivingBuffers() {
   if (!_IDBDatabasePromise) {
-    console.error(`FileDataStore: unfound IDB promise during resetting all receiving buffers`);
+    console.error(
+      `WebRTCGroupChatService: unfound IDB promise during resetting all receiving buffers`
+    );
     return;
   }
 
   _IDBDatabasePromise
     .then((IDBDatabase) => {
       if (!IDBDatabase) {
-        throw new Error(`FileDataStore: unfound IDB during resetting all receiving buffers`);
+        throw new Error(
+          `WebRTCGroupChatService: unfound IDB during resetting all receiving buffers`
+        );
       }
 
       _resetIDBAllReceivingBuffers(IDBDatabase);
@@ -561,7 +565,7 @@ function _resetAllReceivingBufferMergedFiles() {
 
   if (!_IDBDatabasePromise) {
     console.error(
-      `FileDataStore: unfound IDB promise during resetting all receiving buffer merged files with all file Ids`,
+      `WebRTCGroupChatService: unfound IDB promise during resetting all receiving buffer merged files with all file Ids`,
       allFileIds
     );
     return;
@@ -571,7 +575,7 @@ function _resetAllReceivingBufferMergedFiles() {
     .then((IDBDatabase) => {
       if (!IDBDatabase) {
         throw new Error(
-          `FileDataStore: unfound IDB during resetting all receiving buffer merged files with all file Ids`
+          `WebRTCGroupChatService: unfound IDB during resetting all receiving buffer merged files with all file Ids`
         );
       }
 
@@ -590,12 +594,12 @@ const _IDBDatabaseVersion = 1;
 
 function _openIDB() {
   _IDBDatabasePromise = new Promise((resolve, reject) => {
-    console.debug(`FileDataStore: indexedDB is opening ...`);
+    console.debug(`WebRTCGroupChatService: indexedDB is opening ...`);
 
     const request = indexedDB.open(_IDBDatabaseName, _IDBDatabaseVersion);
 
     request.onupgradeneeded = function (event) {
-      console.debug(`FileDataStore: indexedDB is upgrading ...`);
+      console.debug(`WebRTCGroupChatService: indexedDB is upgrading ...`);
       switch (event.oldVersion) {
         case 0:
           // version 0 means that the client had no database, perform initialization
@@ -627,7 +631,7 @@ function _openIDB() {
     };
     request.onsuccess = function () {
       // ...the db is ready, use it...
-      console.debug(`FileDataStore: indexedDB is now open`);
+      console.debug(`WebRTCGroupChatService: indexedDB is now open`);
 
       const database = request.result;
       database.onversionchange = function () {
@@ -635,7 +639,10 @@ function _openIDB() {
         alert("IndexedDB is outdated, please reload the page in order to upgrade it");
       };
       database.onerror = function (event) {
-        console.error(`FileDataStore: unexpected and uncatched indexedDB onerror`, event.target);
+        console.error(
+          `WebRTCGroupChatService: unexpected and uncatched indexedDB onerror`,
+          event.target
+        );
       };
       resolve(database);
     };
@@ -651,7 +658,7 @@ function _openIDB() {
     };
     request.onerror = (event) => {
       console.error(
-        `FileDataStore: unexpected indexedDB open database request onerror`,
+        `WebRTCGroupChatService: unexpected indexedDB open database request onerror`,
         (event.target as IDBRequest).error
       );
       reject();
@@ -664,11 +671,13 @@ const _receivingBufferIDBPersistingSchedulerMap: ReceivingBufferIDBPersistingSch
   scheduleNextTask(peerId, fileHash, task) {
     let hashToPersistingPromiseChain = this.peerMap.get(peerId);
     if (!hashToPersistingPromiseChain) {
-      console.debug(`FileDataStore: unfound file hash to persisting promise chain object`);
+      console.debug(`WebRTCGroupChatService: unfound file hash to persisting promise chain object`);
       hashToPersistingPromiseChain = {};
     }
     if (!hashToPersistingPromiseChain[fileHash]) {
-      console.debug(`FileDataStore: unfound persisting promise chain of a file (${fileHash})`);
+      console.debug(
+        `WebRTCGroupChatService: unfound persisting promise chain of a file (${fileHash})`
+      );
 
       hashToPersistingPromiseChain[fileHash] = new Promise<IDBBufferPersistingPromiseFulfillment>(
         (resolve, _) => {
@@ -740,21 +749,27 @@ function _addIDBReceivingBuffer(
     let isOperationSuccessful = true;
 
     request.onsuccess = function (event) {
-      console.debug(`FileDataStore: during addIDBReceivingBuffer, IDB request to add(put) receiving buffer onsuccess`, event);
+      console.debug(
+        `WebRTCGroupChatService: during addIDBReceivingBuffer, IDB request to add(put) receiving buffer onsuccess`,
+        event
+      );
     };
     request.onerror = function (event) {
       console.error(
-        `FileDataStore: during addIDBReceivingBuffer, IDB request to add(put) receiving buffer onerror, start to rollback`,
+        `WebRTCGroupChatService: during addIDBReceivingBuffer, IDB request to add(put) receiving buffer onerror, start to rollback`,
         event
       );
       isOperationSuccessful = false;
     };
     transaction.onerror = (event) => {
-      console.error(`FileDataStore: during addIDBReceivingBuffer, IDB transaction to add(put) receiving buffer onerror`, event);
+      console.error(
+        `WebRTCGroupChatService: during addIDBReceivingBuffer, IDB transaction to add(put) receiving buffer onerror`,
+        event
+      );
     };
     transaction.oncomplete = (event) => {
       console.debug(
-        `FileDataStore: during addIDBReceivingBuffer, IDB transaction to add(put) receiving buffer of a file (${fileHash}) for a peer (${peerId}) from startOffset (${startOffset}) oncomplete`,
+        `WebRTCGroupChatService: during addIDBReceivingBuffer, IDB transaction to add(put) receiving buffer of a file (${fileHash}) for a peer (${peerId}) from startOffset (${startOffset}) oncomplete`,
         isOperationSuccessful
       );
 
@@ -764,7 +779,9 @@ function _addIDBReceivingBuffer(
       }
 
       if (_receivingCancelledMap.getCancelled(peerId, fileHash)) {
-        console.debug(`FileDataStore: during addIDBReceivingBuffer, due to receiving cancelled`);
+        console.debug(
+          `WebRTCGroupChatService: during addIDBReceivingBuffer, due to receiving cancelled`
+        );
 
         // perform IDB rollback because of a receiving file cancelled
         const transaction = IDBDatabase.transaction(_IDBReceivingBufferStoreName, "readwrite");
@@ -772,19 +789,19 @@ function _addIDBReceivingBuffer(
         const request = store.delete(_buildBufferId(peerId, fileHash, startOffset));
         request.onsuccess = function (event) {
           console.debug(
-            `FileDataStore: during addIDBReceivingBuffer, IDB manaully rollbacking request to delete receiving buffer onsuccess`,
+            `WebRTCGroupChatService: during addIDBReceivingBuffer, IDB manaully rollbacking request to delete receiving buffer onsuccess`,
             event
           );
         };
         request.onerror = function (event) {
           console.error(
-            `FileDataStore: during addIDBReceivingBuffer, IDB manaully rollbacking request to delete receiving buffer onerror`,
+            `WebRTCGroupChatService: during addIDBReceivingBuffer, IDB manaully rollbacking request to delete receiving buffer onerror`,
             event
           );
         };
         transaction.oncomplete = (event) => {
           console.debug(
-            `FileDataStore: during addIDBReceivingBuffer, IDB manaully rollbacking transaction to delete receiving buffer of a file (${fileHash}) for a peer (${peerId}) from startOffset (${startOffset}) oncomplete`
+            `WebRTCGroupChatService: during addIDBReceivingBuffer, IDB manaully rollbacking transaction to delete receiving buffer of a file (${fileHash}) for a peer (${peerId}) from startOffset (${startOffset}) oncomplete`
           );
         };
 
@@ -831,13 +848,13 @@ function _mergeIDBReceivingBufferIfNeeded(
     const transaction = IDBDatabase.transaction(_IDBReceivingBufferStoreName, "readonly");
     transaction.oncomplete = (event) => {
       console.debug(
-        `FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB transaction to merge IDB receiving buffer for a file (${fileHash}) and a peer (${peerId}) oncomplete`,
+        `WebRTCGroupChatService: during fetching out IDBReceivingBuffer for merging, IDB transaction to merge IDB receiving buffer for a file (${fileHash}) and a peer (${peerId}) oncomplete`,
         event
       );
     };
     transaction.onerror = (event) => {
       console.debug(
-        `FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB transaction to merge IDB receiving buffer for a file (${fileHash}) and a peer (${peerId}) onerror`,
+        `WebRTCGroupChatService: during fetching out IDBReceivingBuffer for merging, IDB transaction to merge IDB receiving buffer for a file (${fileHash}) and a peer (${peerId}) onerror`,
         event
       );
       reject();
@@ -848,24 +865,30 @@ function _mergeIDBReceivingBufferIfNeeded(
     const bufferWrapperList: ReceivingIDBBufferWrapper[] = [];
 
     request.onerror = function (event) {
-      console.error(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request to open cursor of receiving buffer onerror`, event);
+      console.error(
+        `WebRTCGroupChatService: during fetching out IDBReceivingBuffer for merging, IDB request to open cursor of receiving buffer onerror`,
+        event
+      );
       reject();
     };
     request.onsuccess = function (event) {
       console.debug(
-        `FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request to open cursor of receiving buffer onsuccess`,
-        event,
+        `WebRTCGroupChatService: during fetching out IDBReceivingBuffer for merging, IDB request to open cursor of receiving buffer onsuccess`,
+        event
       );
 
       if (!(event.target instanceof IDBRequest)) {
-        console.error(`FileDataStore: during fetching out IDBReceivingBuffer for merging, unexpected event target instance type`, event.target);
+        console.error(
+          `WebRTCGroupChatService: during fetching out IDBReceivingBuffer for merging, unexpected event target instance type`,
+          event.target
+        );
         return;
       }
 
       if (event.target.result instanceof IDBCursorWithValue) {
         const cursor = event.target.result;
         console.debug(
-          `FileDataStore: during fetching out IDBReceivingBuffer for merging, it is a valid cursor of receiving buffer including startOffset (${cursor.value.startOffset})`
+          `WebRTCGroupChatService: during fetching out IDBReceivingBuffer for merging, it is a valid cursor of receiving buffer including startOffset (${cursor.value.startOffset})`
         );
 
         const record = cursor.value;
@@ -877,12 +900,12 @@ function _mergeIDBReceivingBufferIfNeeded(
         cursor.continue();
       } else {
         console.debug(
-          `FileDataStore: during fetching out IDBReceivingBuffer for merging, ending up with a invalid cursor of receiving buffer, time to creat a file with a buffer wrapper list of`,
+          `WebRTCGroupChatService: during fetching out IDBReceivingBuffer for merging, ending up with a invalid cursor of receiving buffer, time to creat a file with a buffer wrapper list of`,
           bufferWrapperList
         );
 
         console.debug(
-          `FileDataStore: during merging all IDBReceivingBuffer into one file, merging starts`,
+          `WebRTCGroupChatService: during merging all IDBReceivingBuffer into one file, merging starts`,
           event
         );
 
@@ -898,7 +921,7 @@ function _mergeIDBReceivingBufferIfNeeded(
         });
 
         console.debug(
-          `FileDataStore: during merging all IDBReceivingBuffer into one file, merging in success`,
+          `WebRTCGroupChatService: during merging all IDBReceivingBuffer into one file, merging in success`,
           event
         );
 
@@ -912,27 +935,27 @@ function _mergeIDBReceivingBufferIfNeeded(
 
         request.onsuccess = function (event) {
           console.debug(
-            `FileDataStore: during storing the merged file, IDB request to add(put) a merged receiving file onsuccess`,
+            `WebRTCGroupChatService: during storing the merged file, IDB request to add(put) a merged receiving file onsuccess`,
             event
           );
         };
         request.onerror = function (event) {
           console.error(
-            `FileDataStore: during  storing the merged file, IDB request to add(put) a merged receiving file onerror`,
+            `WebRTCGroupChatService: during  storing the merged file, IDB request to add(put) a merged receiving file onerror`,
             event
           );
           reject();
         };
         transaction.onerror = (event) => {
           console.debug(
-            `FileDataStore: during  storing the merged file, IDB transaction to add(put) a merged receiving file (${fileHash}) for a peer (${peerId}) onerror`,
+            `WebRTCGroupChatService: during  storing the merged file, IDB transaction to add(put) a merged receiving file (${fileHash}) for a peer (${peerId}) onerror`,
             event
           );
           reject();
         };
         transaction.oncomplete = (event) => {
           console.debug(
-            `FileDataStore: during  storing the merged file, IDB transaction to add(put) a merged receiving file (${fileHash}) for a peer (${peerId}) oncomplete`,
+            `WebRTCGroupChatService: during  storing the merged file, IDB transaction to add(put) a merged receiving file (${fileHash}) for a peer (${peerId}) oncomplete`,
             event
           );
 
@@ -946,14 +969,14 @@ function _mergeIDBReceivingBufferIfNeeded(
           const transaction = IDBDatabase.transaction(_IDBReceivingBufferStoreName, "readwrite");
           transaction.onerror = (event) => {
             console.debug(
-              `FileDataStore: during deleting IDBReceivingBuffer after merging, IDB transaction to delete all receiving buffer for a file (${fileHash}) and a peer (${peerId}) onerror`,
+              `WebRTCGroupChatService: during deleting IDBReceivingBuffer after merging, IDB transaction to delete all receiving buffer for a file (${fileHash}) and a peer (${peerId}) onerror`,
               event
             );
             reject();
           };
           transaction.oncomplete = (event) => {
             console.debug(
-              `FileDataStore: during deleting IDBReceivingBuffer after merging, IDB transaction delete all receiving buffer for a file (${fileHash}) and a peer (${peerId}) oncomplete`,
+              `WebRTCGroupChatService: during deleting IDBReceivingBuffer after merging, IDB transaction delete all receiving buffer for a file (${fileHash}) and a peer (${peerId}) oncomplete`,
               event
             );
             resolve({
@@ -966,30 +989,39 @@ function _mergeIDBReceivingBufferIfNeeded(
           const request = index.openCursor(IDBKeyRange.only(_buildFileId(peerId, fileHash)));
           request.onerror = function (event) {
             console.error(
-              `FileDataStore: during deleting IDBReceivingBuffer after merging, IDB request to open cursor of receiving buffer onerror`,
+              `WebRTCGroupChatService: during deleting IDBReceivingBuffer after merging, IDB request to open cursor of receiving buffer onerror`,
               event
             );
             reject();
           };
           request.onsuccess = function (event) {
             console.debug(
-              `FileDataStore: during deleting IDBReceivingBuffer after merging, IDB request to open cursor of receiving buffer onsuccess`,
+              `WebRTCGroupChatService: during deleting IDBReceivingBuffer after merging, IDB request to open cursor of receiving buffer onsuccess`,
               event
             );
 
             if (!(event.target instanceof IDBRequest)) {
-              console.error(`FileDataStore: during deleting IDBReceivingBuffer after merging, unexpected event target instance type`, event.target);
+              console.error(
+                `WebRTCGroupChatService: during deleting IDBReceivingBuffer after merging, unexpected event target instance type`,
+                event.target
+              );
               return;
             }
-            
+
             if (event.target.result instanceof IDBCursor) {
               const cursor = event.target.result;
               const request = store.delete(cursor.primaryKey);
               request.onsuccess = function (event) {
-                console.debug(`FileDataStore: during deleting IDBReceivingBuffer after merging, requesting to delete a buffer onsuccuess`, event);
+                console.debug(
+                  `WebRTCGroupChatService: during deleting IDBReceivingBuffer after merging, requesting to delete a buffer onsuccuess`,
+                  event
+                );
               };
               request.onerror = function (event) {
-                console.debug(`FileDataStore: during deleting IDBReceivingBuffer after merging, requesting to delete a buffer onerror`, event);
+                console.debug(
+                  `WebRTCGroupChatService: during deleting IDBReceivingBuffer after merging, requesting to delete a buffer onerror`,
+                  event
+                );
                 reject();
               };
               cursor.continue();
@@ -1011,17 +1043,20 @@ function _getIDBReceivingFile(peerId: string, fileHash: string, IDBDatabase: IDB
     let file: File;
 
     request.onsuccess = (event) => {
-      console.debug(`FileDataStore: IDB request to get a receiving file onsuccess`, event);
+      console.debug(`WebRTCGroupChatService: IDB request to get a receiving file onsuccess`, event);
 
       if (!(event.target instanceof IDBRequest)) {
-        console.error(`FileDataStore: unexpected event target instance type`, event.target);
+        console.error(
+          `WebRTCGroupChatService: unexpected event target instance type`,
+          event.target
+        );
         return;
       }
 
       const record = event.target.result;
       if (!record) {
         console.debug(
-          `FileDataStore: unexpected empty record of receiving file (${fileHash}) for a peer (${peerId})`
+          `WebRTCGroupChatService: unexpected empty record of receiving file (${fileHash}) for a peer (${peerId})`
         );
         return;
       }
@@ -1031,12 +1066,12 @@ function _getIDBReceivingFile(peerId: string, fileHash: string, IDBDatabase: IDB
       file = record.file as File;
     };
     request.onerror = (event) => {
-      console.error(`FileDataStore: IDB request to get a receiving file onerror`, event);
+      console.error(`WebRTCGroupChatService: IDB request to get a receiving file onerror`, event);
       isOperationSuccessful = false;
     };
     transaction.oncomplete = (event) => {
       console.debug(
-        `FileDataStore: IDB transaction to get a receiving file (${fileHash}) for a peer (${peerId}) oncomplete`,
+        `WebRTCGroupChatService: IDB transaction to get a receiving file (${fileHash}) for a peer (${peerId}) oncomplete`,
         event
       );
 
@@ -1058,15 +1093,23 @@ function _resetIDBAllReceivingBuffers(IDBDatabase: IDBDatabase) {
     let isOperationSuccessful = true;
 
     request.onsuccess = function (event) {
-      console.debug(`FileDataStore: IDB request to clear all receiving buffers onsuccess`, event);
+      console.debug(
+        `WebRTCGroupChatService: IDB request to clear all receiving buffers onsuccess`,
+        event
+      );
     };
     request.onerror = function (event) {
-      console.error(`FileDataStore: IDB request to clear all receiving buffers onerror`, event);
+      console.error(
+        `WebRTCGroupChatService: IDB request to clear all receiving buffers onerror`,
+        event
+      );
       isOperationSuccessful = false;
     };
 
     transaction.oncomplete = () => {
-      console.debug(`FileDataStore: IDB transaction to clear all receiving buffers oncomplete`);
+      console.debug(
+        `WebRTCGroupChatService: IDB transaction to clear all receiving buffers oncomplete`
+      );
 
       if (!isOperationSuccessful) {
         reject();
@@ -1087,35 +1130,47 @@ function _resetIDBReceivingBuffer(peerId: string, fileHash: string, IDBDatabase:
 
     request.onsuccess = function (event) {
       console.debug(
-        `FileDataStore: during resetIDBReceivingBuffer, IDB request to open cursor of receiving buffer onsuccess`,
+        `WebRTCGroupChatService: during resetIDBReceivingBuffer, IDB request to open cursor of receiving buffer onsuccess`,
         event
       );
 
       if (!(event.target instanceof IDBRequest)) {
-        console.error(`FileDataStore: during resetIDBReceivingBuffer, event target instance type is unexpected`, event.target);
+        console.error(
+          `WebRTCGroupChatService: during resetIDBReceivingBuffer, event target instance type is unexpected`,
+          event.target
+        );
         return;
       }
-      
+
       if (event.target.result instanceof IDBCursor) {
         const cursor = event.target.result;
         const request = store.delete(cursor.primaryKey);
         request.onsuccess = function (event) {
-          console.debug(`FileDataStore: during resetIDBReceivingBuffer, IDB request to delete a receiving buffer onsuccess`, event);
+          console.debug(
+            `WebRTCGroupChatService: during resetIDBReceivingBuffer, IDB request to delete a receiving buffer onsuccess`,
+            event
+          );
         };
         request.onerror = function (event) {
-          console.error(`FileDataStore: during resetIDBReceivingBuffer, IDB request to delete a receiving buffer onerror`, event);
+          console.error(
+            `WebRTCGroupChatService: during resetIDBReceivingBuffer, IDB request to delete a receiving buffer onerror`,
+            event
+          );
           isOperationSuccessful = false;
         };
         cursor.continue();
       }
     };
     request.onerror = function (event) {
-      console.error(`FileDataStore: during resetIDBReceivingBuffer, IDB request to open cursor of receiving buffer onerror`, event);
+      console.error(
+        `WebRTCGroupChatService: during resetIDBReceivingBuffer, IDB request to open cursor of receiving buffer onerror`,
+        event
+      );
       isOperationSuccessful = false;
     };
     transaction.oncomplete = () => {
       console.debug(
-        `FileDataStore: during resetIDBReceivingBuffer, IDB transaction to open cursor and delete receiving buffer of a file (${fileHash}) for a peer (${peerId}) oncomplete`
+        `WebRTCGroupChatService: during resetIDBReceivingBuffer, IDB transaction to open cursor and delete receiving buffer of a file (${fileHash}) for a peer (${peerId}) oncomplete`
       );
 
       if (!isOperationSuccessful) {
@@ -1149,14 +1204,14 @@ function _resetIDBReceivingBufferMergedFiles(fileIds: string[], IDBDatabase: IDB
       const request = store.clear();
       request.onsuccess = function (event) {
         console.debug(
-          `FileDataStore: IDB request to clear all receiving buffer merged files onsuccess`,
+          `WebRTCGroupChatService: IDB request to clear all receiving buffer merged files onsuccess`,
           event
         );
         _receivingHashToExporterMap.clearExporters();
       };
       request.onerror = function (event) {
         console.error(
-          `FileDataStore: IDB request to clear all receiving buffer merged files onerror`,
+          `WebRTCGroupChatService: IDB request to clear all receiving buffer merged files onerror`,
           event
         );
         isOperationSuccessful = false;
@@ -1165,7 +1220,10 @@ function _resetIDBReceivingBufferMergedFiles(fileIds: string[], IDBDatabase: IDB
       const request = store.openCursor();
       request.onsuccess = function (event) {
         if (!(event.target instanceof IDBRequest)) {
-          console.error(`FileDataStore: unexpected event target instance type`, event.target);
+          console.error(
+            `WebRTCGroupChatService: unexpected event target instance type`,
+            event.target
+          );
           return;
         }
 
@@ -1173,7 +1231,7 @@ function _resetIDBReceivingBufferMergedFiles(fileIds: string[], IDBDatabase: IDB
           const cursor = event.target.result;
 
           console.debug(
-            `FileDataStore: IDB request to open cursor of receiving buffer merged file 'onsuccess' with a primaryKey(${cursor.primaryKey})`,
+            `WebRTCGroupChatService: IDB request to open cursor of receiving buffer merged file 'onsuccess' with a primaryKey(${cursor.primaryKey})`,
             event
           );
 
@@ -1182,7 +1240,7 @@ function _resetIDBReceivingBufferMergedFiles(fileIds: string[], IDBDatabase: IDB
             const request = store.delete(fileId);
             request.onsuccess = function (event) {
               console.debug(
-                `FileDataStore: IDB request to delete a receiving buffer merged file with fileId(${cursor.primaryKey}) onsuccess`,
+                `WebRTCGroupChatService: IDB request to delete a receiving buffer merged file with fileId(${cursor.primaryKey}) onsuccess`,
                 event
               );
 
@@ -1191,7 +1249,7 @@ function _resetIDBReceivingBufferMergedFiles(fileIds: string[], IDBDatabase: IDB
             };
             request.onerror = function (event) {
               console.error(
-                `FileDataStore: IDB request to delete a receiving buffer merged file with fileId(${cursor.primaryKey}) onerror`,
+                `WebRTCGroupChatService: IDB request to delete a receiving buffer merged file with fileId(${cursor.primaryKey}) onerror`,
                 event
               );
             };
@@ -1202,7 +1260,7 @@ function _resetIDBReceivingBufferMergedFiles(fileIds: string[], IDBDatabase: IDB
       request.onerror = function (event) {
         isOperationSuccessful = false;
         console.error(
-          `FileDataStore: IDB request to open cursor of receiving buffer merged files onerror`,
+          `WebRTCGroupChatService: IDB request to open cursor of receiving buffer merged files onerror`,
           event
         );
       };
@@ -1210,7 +1268,7 @@ function _resetIDBReceivingBufferMergedFiles(fileIds: string[], IDBDatabase: IDB
 
     transaction.oncomplete = () => {
       console.debug(
-        `FileDataStore: IDB transaction to delete receiving buffer merged files oncomplete`
+        `WebRTCGroupChatService: IDB transaction to delete receiving buffer merged files oncomplete`
       );
 
       if (!isOperationSuccessful) {

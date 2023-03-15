@@ -43,7 +43,7 @@ const _peerConnectionMap: PeerConnectionMap = {
     const curSize = this.peerMap.size;
 
     console.debug(
-      `WebRTCGroupChatController: _peerConnectionMap set executed, and its size changed from ${prevSize} to ${curSize}`
+      `WebRTCGroupChatService: _peerConnectionMap set executed, and its size changed from ${prevSize} to ${curSize}`
     );
 
     if (_handlePeersInfoChanged) {
@@ -53,7 +53,7 @@ const _peerConnectionMap: PeerConnectionMap = {
   get(key) {
     return this.peerMap.get(key);
   },
-  findFirstPeerIdByPeerConnection: function (peerConnectionToFind: PeerConnection) {
+  findFirstPeerIdByPeerConnection: function (peerConnectionToFind: NegotiatablePeerConnection) {
     for (let [peerId, peerConnection] of this.peerMap.entries()) {
       if (peerConnection === peerConnectionToFind) return peerId;
     }
@@ -64,7 +64,7 @@ const _peerConnectionMap: PeerConnectionMap = {
     const curSize = this.peerMap.size;
 
     console.debug(
-      `WebRTCGroupChatController: _peerConnectionMap delete executed, and its size changed from ${prevSize} to ${curSize}`
+      `WebRTCGroupChatService: _peerConnectionMap delete executed, and its size changed from ${prevSize} to ${curSize}`
     );
 
     if (_handlePeersInfoChanged) {
@@ -76,7 +76,7 @@ const _peerConnectionMap: PeerConnectionMap = {
     this.peerMap.clear();
     const curSize = this.peerMap.size;
     console.debug(
-      `WebRTCGroupChatController: _peerConnectionMap clear executed, and its size changed from ${prevSize} to ${curSize}`
+      `WebRTCGroupChatService: _peerConnectionMap clear executed, and its size changed from ${prevSize} to ${curSize}`
     );
 
     if (_handlePeersInfoChanged) {
@@ -97,7 +97,7 @@ const _peerConnectionMap: PeerConnectionMap = {
 
 function _handleNewPeerArivalInternally(newPeerArivalPayload: NewPeerArivalPayload) {
   const peerConnectionOfferCollisionSetup = (
-    peerConnection: PeerConnection,
+    peerConnection: NegotiatablePeerConnection,
     isNewPeerPolite: boolean
   ) => {
     peerConnection.makingOffer = false;
@@ -133,13 +133,13 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
   const peerConnection = _locatePeerConnection(peerId);
   if (!peerConnection) {
     console.debug(
-      `WebRTCGroupChatController: unexpected non-existent peer connection ( ${peerConnection} ) with peerId of ${peerId} after '_locatePeerConnection' method`
+      `WebRTCGroupChatService: unexpected non-existent peer connection ( ${peerConnection} ) with peerId of ${peerId} after '_locatePeerConnection' method`
     );
     return;
   }
 
   console.debug(
-    `WebRTCGroupChatController: before consuming this sdp, the current peerConnection signalingState is ${
+    `WebRTCGroupChatService: before consuming this sdp, the current peerConnection signalingState is ${
       peerConnection.signalingState
     }, the localDescription type is ${
       peerConnection.localDescription ? peerConnection.localDescription.type : "unknown"
@@ -150,19 +150,19 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
 
   if ("iceCandidate" in incomingPassthrough) {
     const { iceCandidate } = incomingPassthrough;
-    console.debug(`WebRTCGroupChatController: this passthrough carries IceCandidate`, iceCandidate);
+    console.debug(`WebRTCGroupChatService: this passthrough carries IceCandidate`, iceCandidate);
 
     peerConnection
       .addIceCandidate(iceCandidate)
       .then(() => {
         console.debug(
-          `WebRTCGroupChatController: peerId (${peerId})'s 'addIceCandidate' done with no issue`
+          `WebRTCGroupChatService: peerId (${peerId})'s 'addIceCandidate' done with no issue`
         );
       })
       .catch((error) => {
         // Suppress ignored offer's candidates
         if (!peerConnection.ignoreRemoteOffer) {
-          console.error(`WebRTCGroupChatController: Found error with message of ${error}`);
+          console.error(`WebRTCGroupChatService: Found error with message of ${error}`);
         }
       });
     return;
@@ -170,7 +170,7 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
 
   const { sdp, callingConstraints } = incomingPassthrough;
 
-  console.debug(`WebRTCGroupChatController: this passthrough carries sdp (${sdp.type})`);
+  console.debug(`WebRTCGroupChatService: this passthrough carries sdp (${sdp.type})`);
 
   const isPeerConnectionStable =
     peerConnection.signalingState == "stable" ||
@@ -181,7 +181,7 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
 
   if (isOfferCollision) {
     console.debug(
-      `WebRTCGroupChatController: an offer collision has happened ( signalingState: ${peerConnection.signalingState}, isSettingRemoteAnswerPending: ${peerConnection.isSettingRemoteAnswerPending}, makingOffer: ${peerConnection.makingOffer}, isPeerConnectionStable: ${isPeerConnectionStable}, sdp type: ${sdp.type} )`
+      `WebRTCGroupChatService: an offer collision has happened ( signalingState: ${peerConnection.signalingState}, isSettingRemoteAnswerPending: ${peerConnection.isSettingRemoteAnswerPending}, makingOffer: ${peerConnection.makingOffer}, isPeerConnectionStable: ${isPeerConnectionStable}, sdp type: ${sdp.type} )`
     );
   }
 
@@ -190,7 +190,7 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
 
   if (peerConnection.ignoreRemoteOffer) {
     console.debug(
-      `WebRTCGroupChatController: the local peer ignore the ${sdp.type} typed SDP for peer connection of peerId ( ${peerId} ), during this offer collision`
+      `WebRTCGroupChatService: the local peer ignore the ${sdp.type} typed SDP for peer connection of peerId ( ${peerId} ), during this offer collision`
     );
     return;
   }
@@ -203,7 +203,7 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
   console.debug(`callingConstraints:`, callingConstraints);
 
   console.debug(
-    `WebRTCGroupChatController: before setting 'setRemoteDescription', the remoteDescription is ${
+    `WebRTCGroupChatService: before setting 'setRemoteDescription', the remoteDescription is ${
       peerConnection.remoteDescription ? peerConnection.remoteDescription.type : "unknown"
     }`
   );
@@ -212,10 +212,10 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
     .setRemoteDescription(sdp) // SRD rolls back as needed
     .then(() => {
       console.debug(
-        `WebRTCGroupChatController: the local peer accept the ( ${sdp.type} ) typed SDP as a param of 'setRemoteDescription' for peer connection of peerId ( ${peerId} )`
+        `WebRTCGroupChatService: the local peer accept the ( ${sdp.type} ) typed SDP as a param of 'setRemoteDescription' for peer connection of peerId ( ${peerId} )`
       );
       console.debug(
-        `WebRTCGroupChatController: after setting 'setRemoteDescription', the remoteDescription is ${
+        `WebRTCGroupChatService: after setting 'setRemoteDescription', the remoteDescription is ${
           peerConnection.remoteDescription ? peerConnection.remoteDescription.type : "unknown"
         }`
       );
@@ -241,7 +241,7 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
     })
     .catch((error) => {
       console.error(
-        `WebRTCGroupChatController: Found an error with message of ${error} during 'setRemoteDescription' or 'setLocalDescription'`
+        `WebRTCGroupChatService: Found an error with message of ${error} during 'setRemoteDescription' or 'setLocalDescription'`
       );
     });
 }
@@ -255,7 +255,7 @@ function _handleNewPeerLeave(newPeerLeavePayload: NewPeerLeavePayload) {
 function _locatePeerConnection(peerId: string, peerName?: string) {
   if (peerId.length === 0) {
     console.error(
-      `WebRTCGroupChatController: unexpected peerId ( ${peerId} ) during '_locatePeerConnection'`
+      `WebRTCGroupChatService: unexpected peerId ( ${peerId} ) during '_locatePeerConnection'`
     );
     return;
   }
@@ -263,7 +263,7 @@ function _locatePeerConnection(peerId: string, peerName?: string) {
     const prevPeerIdsSize = _peerConnectionMap.size();
     _addPeerConnection(peerId, peerName);
     console.debug(
-      `WebRTCGroupChatController: after '_addPeerConnection' method, peer connection count changed from ${prevPeerIdsSize} to ${_peerConnectionMap.size()}`
+      `WebRTCGroupChatService: after '_addPeerConnection' method, peer connection count changed from ${prevPeerIdsSize} to ${_peerConnectionMap.size()}`
     );
   }
   return _peerConnectionMap.get(peerId)!;
@@ -272,12 +272,12 @@ function _locatePeerConnection(peerId: string, peerName?: string) {
 function _addPeerConnection(peerId: string, peerName?: string) {
   if (peerId.length === 0) {
     console.debug(
-      `WebRTCGroupChatController: unexpected peerId of ${peerId} during creating and adding a new peer connection`
+      `WebRTCGroupChatService: unexpected peerId of ${peerId} during creating and adding a new peer connection`
     );
     return;
   }
   const peerConnection = new PeerConnection(_peerConnectionConfig);
-  console.debug(`WebRTCGroupChatController: a new 'RTCPeerConnection' is created`);
+  console.debug(`WebRTCGroupChatService: a new 'RTCPeerConnection' is created`);
 
   peerConnection.peerName = peerName;
 
@@ -306,7 +306,7 @@ function _handlePeerConnectionICECandidateEvent(event: RTCPeerConnectionIceEvent
     };
     SignalingManager.passThroughSignaling(outgoingICEPassThrough);
     console.debug(
-      `WebRTCGroupChatController: a peer connection's 'onicecandidate' fired with a new ICE candidate, then it's sent to ${peerId}`
+      `WebRTCGroupChatService: a peer connection's 'onicecandidate' fired with a new ICE candidate, then it's sent to ${peerId}`
     );
   }
 }
@@ -317,7 +317,7 @@ function _handlePeerConnectionICEConnectionStateChangeEvent(event: Event) {
   }
   const peerConnection = event.target;
   console.debug(
-    `WebRTCGroupChatController: a peer connection's 'oniceconnectionstatechange' fired with a state of '${peerConnection.iceConnectionState}'`,
+    `WebRTCGroupChatService: a peer connection's 'oniceconnectionstatechange' fired with a state of '${peerConnection.iceConnectionState}'`,
     `localDescription:`,
     peerConnection.currentLocalDescription,
     `remoteDescription:`,
@@ -330,7 +330,7 @@ function _handlePeerConnectionICEConnectionStateChangeEvent(event: Event) {
 function _handlePeerConnectionNegotiationEvent(event: Event) {
   if (!(event.target instanceof PeerConnection)) {
     console.error(
-      `WebRTCGroupChatController: unexpected peer connection negotiation event target type`,
+      `WebRTCGroupChatService: unexpected peer connection negotiation event target type`,
       event.target
     );
     return;
@@ -344,7 +344,7 @@ function _handlePeerConnectionNegotiationEvent(event: Event) {
   }
 
   console.debug(
-    `WebRTCGroupChatController: a peer connection's 'onnegotiationneeded' fired, maybe it's time to create a new SDP offer ? the current remoteDescription is ${
+    `WebRTCGroupChatService: a peer connection's 'onnegotiationneeded' fired, maybe it's time to create a new SDP offer ? the current remoteDescription is ${
       peerConnection.remoteDescription ? peerConnection.remoteDescription.type : "unknown"
     }`
   );
@@ -362,10 +362,10 @@ function _handlePeerConnectionNegotiationEvent(event: Event) {
       }
 
       console.debug(
-        `WebRTCGroupChatController: a new localDescription of type '${offer.type}' created to peerId of ${peerId} during 'onnegotiationneeded'`
+        `WebRTCGroupChatService: a new localDescription of type '${offer.type}' created to peerId of ${peerId} during 'onnegotiationneeded'`
       );
       console.debug(
-        `WebRTCGroupChatController: the current localDescription is ${
+        `WebRTCGroupChatService: the current localDescription is ${
           peerConnection.localDescription!.type
         }, the current remoteDescription is ${
           peerConnection.remoteDescription ? peerConnection.remoteDescription.type : "unknown"
@@ -380,7 +380,7 @@ function _handlePeerConnectionNegotiationEvent(event: Event) {
       SignalingManager.passThroughSignaling(outgoingSDPPassThrough);
     })
     .catch((error) => {
-      console.error(`WebRTCGroupChatController: Found error with message of ${error}`);
+      console.error(`WebRTCGroupChatService: Found error with message of ${error}`);
     })
     .finally(() => {
       peerConnection.makingOffer = false;
@@ -389,9 +389,7 @@ function _handlePeerConnectionNegotiationEvent(event: Event) {
 
 function _closePeerConnection(peerId: string) {
   if (peerId.length === 0) {
-    console.debug(
-      `WebRTCGroupChatController: unexpected peerId when stopping peer side connection`
-    );
+    console.debug(`WebRTCGroupChatService: unexpected peerId when stopping peer side connection`);
     return;
   }
 
@@ -406,13 +404,11 @@ function _closeALLPeerConnections() {
   _peerConnectionMap.forEach((peerConnection, peerId) => {
     if (peerConnection) {
       peerConnection.close();
-      console.debug(
-        `WebRTCGroupChatController: the peerConnection with peerId of ${peerId} closed`
-      );
+      console.debug(`WebRTCGroupChatService: the peerConnection with peerId of ${peerId} closed`);
     }
   });
   _peerConnectionMap.clear();
-  console.debug(`WebRTCGroupChatController: all peer connections cleared`);
+  console.debug(`WebRTCGroupChatService: all peer connections cleared`);
 }
 
 /**

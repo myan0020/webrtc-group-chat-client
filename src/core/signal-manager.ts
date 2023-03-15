@@ -23,7 +23,7 @@ let _handleNewPassthroughArival: ((payload: IncomingPassthrough) => void) | unde
 let _handleNewPeerArivalInternally: ((payload: NewPeerArivalPayload) => void) | undefined;
 
 function _handleSocketOpen(event: Event) {
-  console.debug("WebRTCGroupChatController: websocket connected");
+  console.debug("WebRTCGroupChatService: websocket connected");
   // external usage
   if (_handleWebSocketOpened) {
     _handleWebSocketOpened(event);
@@ -31,7 +31,7 @@ function _handleSocketOpen(event: Event) {
 }
 
 function _handleSocketClose(event: Event) {
-  console.debug("WebRTCGroupChatController: client side heared websocket onclose event");
+  console.debug("WebRTCGroupChatService: client side heared websocket onclose event");
   // external usage
   if (_handleWebSocketClosed) {
     _handleWebSocketClosed(event);
@@ -39,7 +39,7 @@ function _handleSocketClose(event: Event) {
 }
 
 function _handleSocketPing() {
-  console.debug("WebRTCGroupChatController: PING signal received, will respond with PONG signal");
+  console.debug("WebRTCGroupChatService: PING signal received, will respond with PONG signal");
   if (!_webSocketUrl) {
     return;
   }
@@ -47,7 +47,7 @@ function _handleSocketPing() {
 }
 
 function _handleSocketUpdateRooms(payload: UpdateRoomsPayload) {
-  console.debug("WebRTCGroupChatController: UPDATE_ROOMS signal received");
+  console.debug("WebRTCGroupChatService: UPDATE_ROOMS signal received");
   // external usage
   if (_handleRoomsUpdated) {
     _handleRoomsUpdated(payload);
@@ -55,7 +55,7 @@ function _handleSocketUpdateRooms(payload: UpdateRoomsPayload) {
 }
 
 function _handleSocketJoinRoomSuccess(payload: JoinRoomSuccessPayload) {
-  console.debug("WebRTCGroupChatController: JOIN_ROOM_SUCCESS signal received");
+  console.debug("WebRTCGroupChatService: JOIN_ROOM_SUCCESS signal received");
   // external usage
   if (_handleJoinRoomSuccess) {
     _handleJoinRoomSuccess(payload);
@@ -63,7 +63,7 @@ function _handleSocketJoinRoomSuccess(payload: JoinRoomSuccessPayload) {
 }
 
 function _handleSocketLeaveRoomSuccess(payload: LeaveRoomSuccessPayload) {
-  console.debug("WebRTCGroupChatController: LEAVE_ROOM_SUCCESS signal received");
+  console.debug("WebRTCGroupChatService: LEAVE_ROOM_SUCCESS signal received");
   // external usage
   if (_handleLeaveRoomSuccess) {
     _handleLeaveRoomSuccess(payload);
@@ -71,7 +71,7 @@ function _handleSocketLeaveRoomSuccess(payload: LeaveRoomSuccessPayload) {
 }
 
 function _handleSocketNewWebRTCPeerArival(payload: NewPeerArivalPayload) {
-  console.debug("WebRTCGroupChatController: WEBRTC_NEW_PEER signal received");
+  console.debug("WebRTCGroupChatService: WEBRTC_NEW_PEER signal received");
   // internal usage
   if (_handleNewPeerArivalInternally) {
     _handleNewPeerArivalInternally(payload);
@@ -79,7 +79,7 @@ function _handleSocketNewWebRTCPeerArival(payload: NewPeerArivalPayload) {
 }
 
 function _handleSocketNewWebRTCPassthroughArival(payload: IncomingPassthrough) {
-  console.debug("WebRTCGroupChatController: WEBRTC_NEW_PASSTHROUGH signal received");
+  console.debug("WebRTCGroupChatService: WEBRTC_NEW_PASSTHROUGH signal received");
   // internal usage
   if (_handleNewPassthroughArival) {
     _handleNewPassthroughArival(payload);
@@ -87,7 +87,7 @@ function _handleSocketNewWebRTCPassthroughArival(payload: IncomingPassthrough) {
 }
 
 function _handleSocketNewWebRTCPeerLeave(payload: NewPeerLeavePayload) {
-  console.debug("WebRTCGroupChatController: WEBRTC_NEW_PEER_LEAVE signal received");
+  console.debug("WebRTCGroupChatService: WEBRTC_NEW_PEER_LEAVE signal received");
   // internal usage
   if (_handleNewPeerLeaved) {
     _handleNewPeerLeaved(payload);

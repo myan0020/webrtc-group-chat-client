@@ -14,19 +14,19 @@ function _createSocket(
     socket = new ReconnectingAliveSocket(socketUrl);
 
     const openEventListener = function (event: Event) {
-      console.debug(`SocketService: websocket connected`);
+      console.debug(`WebRTCGroupChatService: websocket connected`);
       // external usage
       if (openCallback) {
         openCallback(event);
       }
     };
     const errorEventListener = function (event: Event) {
-      console.debug(`SocketService: client side heared websocket onerror event`, event);
+      console.debug(`WebRTCGroupChatService: client side heared websocket onerror event`, event);
     };
     const closeEventListener = function (event: Event) {
       const reconnectingAliveSocketEvent = event as ReconnectingAliveSocketEvent;
       console.debug(
-        `SocketService: client side heared websocket onclose event (code: ${reconnectingAliveSocketEvent.code}; reason: ${reconnectingAliveSocketEvent.reason})`
+        `WebRTCGroupChatService: client side heared websocket onclose event (code: ${reconnectingAliveSocketEvent.code}; reason: ${reconnectingAliveSocketEvent.reason})`
       );
       // external usage
       if (closeCallback) {
@@ -91,7 +91,7 @@ function _removeSocketListeners(socketUrl: string) {
   _socketMap.delete(socketUrl);
   _eventListenerMap.delete(socketUrl);
 
-  console.debug(`SocketService: websocket listeners removed`);
+  console.debug(`WebRTCGroupChatService: websocket listeners removed`);
 }
 
 function _destroySocket(socketUrl: string) {
