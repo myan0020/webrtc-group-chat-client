@@ -861,14 +861,14 @@ function _mergeIDBReceivingBufferIfNeeded(
         console.error(`FileDataStore: during fetching out IDBReceivingBuffer for merging, unexpected event target instance type`, event.target);
         return;
       }
-      if (!event.target.result) {
-        console.debug(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request result is empty`, event.target);
-        return;
-      }
-      if (!(event.target.result instanceof IDBCursorWithValue)) {
-        console.error(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request result instance type is unexpected`, event.target);
-        return;
-      }
+      // if (!event.target.result) {
+      //   console.debug(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request result is empty`, event.target);
+      //   return;
+      // }
+      // if (!(event.target.result instanceof IDBCursorWithValue)) {
+      //   console.error(`FileDataStore: during fetching out IDBReceivingBuffer for merging, IDB request result instance type is unexpected`, event.target);
+      //   return;
+      // }
 
       const cursor = event.target.result;
       if (cursor) {
