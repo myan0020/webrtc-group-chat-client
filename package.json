@@ -1,6 +1,6 @@
 {
   "name": "webrtc-group-chat-client",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.1-beta.2",
   "description": "A browser side library, using W3C WebRTC API and simple mesh architecture, providing only data-layer service, aims to help anyone who wants to build WebRTC group chatting related web apps",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
